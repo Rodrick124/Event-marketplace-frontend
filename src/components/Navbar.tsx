@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { FaShoppingCart } from 'react-icons/fa';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  // Temporary mock auth state - in a real app this would come from your auth context
-  const isLoggedIn = false;
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <nav className="bg-white shadow-lg">
@@ -51,46 +53,64 @@ const Navbar = () => {
 
           <div className="flex items-center space-x-4">
             <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
-              {isLoggedIn ? (
-                <div className="relative">
+              {isAuthenticated && user ? (
+                <>
+                  {/* Cart Icon */}
                   <button
-                    onClick={() => setIsProfileOpen(!isProfileOpen)}
-                    className="flex items-center space-x-2 focus:outline-none"
+                    className="relative focus:outline-none mr-2"
+                    onClick={() => navigate('/cart')}
                   >
-                    <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
-                      <span className="text-white text-sm font-medium">JD</span>
-                    </div>
+                    <FaShoppingCart className="w-6 h-6 text-blue-600" />
                   </button>
-                  
                   {/* Profile Dropdown */}
-                  {isProfileOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
-                      <Link
-                        to="/dashboard"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        Dashboard
-                      </Link>
-                      <Link
-                        to="/dashboard/profile"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        Profile
-                      </Link>
-                      <Link
-                        to="/dashboard/settings"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        Settings
-                      </Link>
-                      <button
-                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                      >
-                        Sign Out
-                      </button>
-                    </div>
-                  )}
-                </div>
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsProfileOpen(!isProfileOpen)}
+                      className="flex items-center space-x-2 focus:outline-none"
+                    >
+                      <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
+                        <span className="text-white text-sm font-medium">
+                          {user.initials || user.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    </button>
+                    {isProfileOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
+                        <span className="block px-4 py-2 text-sm text-gray-700 font-semibold">
+                          {user.name}
+                        </span>
+                        <span className="block px-4 py-2 text-xs text-gray-500">
+                          {user.email}
+                        </span>
+                        <hr className="my-1" />
+                        <Link
+                          to="/dashboard"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Dashboard
+                        </Link>
+                        <Link
+                          to="/dashboard/profile"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Profile
+                        </Link>
+                        <Link
+                          to="/dashboard/settings"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Settings
+                        </Link>
+                        <button
+                          className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                          onClick={logout}
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
               ) : (
                 <>
                   <Link 
@@ -162,7 +182,7 @@ const Navbar = () => {
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">
             <div className="flex flex-col space-y-2 px-4">
-              {isLoggedIn ? (
+              {isAuthenticated ? (
                 <>
                   <Link
                     to="/dashboard"
@@ -172,6 +192,7 @@ const Navbar = () => {
                   </Link>
                   <button
                     className="bg-white text-red-600 border border-red-600 hover:bg-red-50 px-4 py-2 rounded-md text-sm font-medium w-full"
+                    onClick={logout}
                   >
                     Sign Out
                   </button>
