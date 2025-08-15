@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { AuthContextType, User, AuthState } from './types';
+import { AuthContextType, User, AuthState, UserRole } from './types';
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Mock login - replace with real API call
       // In a real app, this would come from your backend
-      let role = 'user';
+      let role: UserRole = 'user';
       if (email.includes('admin')) {
         role = 'admin';
       } else if (email.includes('organizer')) {
@@ -61,11 +61,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signup = async (name: string, email: string, password: string) => {
     try {
       // Mock signup - replace with real API call
+      let role: UserRole = 'user';
+      if (email.includes('admin')) {
+        role = 'admin';
+      } else if (email.includes('organizer')) {
+        role = 'organizer';
+      }
+
       const mockUser: User = {
         id: Date.now().toString(),
         name,
         email,
-        initials: getInitials(name)
+        initials: getInitials(name),
+        role
       };
       
       setAuthState({
@@ -94,7 +102,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         id: 'g-' + Date.now().toString(),
         name: 'Google User',
         email: 'google.user@example.com',
-        initials: getInitials('Google User')
+        initials: getInitials('Google User'),
+        role: 'user'
       };
       
       setAuthState({
@@ -115,7 +124,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         id: 'fb-' + Date.now().toString(),
         name: 'Facebook User',
         email: 'facebook.user@example.com',
-        initials: getInitials('Facebook User')
+        initials: getInitials('Facebook User'),
+        role: 'user'
       };
       
       setAuthState({
