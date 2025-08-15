@@ -10,6 +10,7 @@ import ReservationForm from './components/ReservationForm'
 import ErrorBoundary from './components/ErrorBoundary'
 import Events from './pages/Events'
 import Footer from './components/Footer'
+import Dashboard from './pages/Dashboard/Dashboard'
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
               <Route path="/event/:id" element={<EventDetail/>} />
               <Route path="/reserve" element={<ReservationForm />} />
               <Route path="/events" element={<Events />} />
+              <Route path="/dashboard/*" element={<Dashboard />} />
             </Routes>
           </main>
           <Footer />
