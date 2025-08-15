@@ -1,3 +1,5 @@
+export type UserRole = 'user' | 'organizer' | 'admin';
+
 export interface User {
   id: string;
   name: string;
@@ -5,6 +7,7 @@ export interface User {
   initials: string;
   phone?: string;
   bio?: string;
+  role: UserRole;
 }
 
 export interface AuthState {

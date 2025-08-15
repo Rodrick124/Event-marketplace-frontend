@@ -30,11 +30,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     try {
       // Mock login - replace with real API call
+      // In a real app, this would come from your backend
+      let role = 'user';
+      if (email.includes('admin')) {
+        role = 'admin';
+      } else if (email.includes('organizer')) {
+        role = 'organizer';
+      }
+
       const mockUser: User = {
         id: Date.now().toString(),
         name: 'Test User',
         email,
-        initials: getInitials('Test User')
+        initials: getInitials('Test User'),
+        role: role
       };
       
       setAuthState({
@@ -43,6 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       localStorage.setItem('auth_token', 'mock_token');
+      return role; // Return role for redirect
     } catch (error) {
       throw new Error('Login failed');
     }

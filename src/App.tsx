@@ -11,6 +11,9 @@ import ErrorBoundary from './components/ErrorBoundary'
 import Events from './pages/Events'
 import Footer from './components/Footer'
 import Dashboard from './pages/Dashboard/Dashboard'
+import OrganizerDashboard from './pages/Organizer/Dashboard'
+//import AdminDashboard from './pages/Admin/Dashboard'
+import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
   return (
@@ -33,7 +36,16 @@ function App() {
               <Route path="/event/:id" element={<EventDetail/>} />
               <Route path="/reserve" element={<ReservationForm />} />
               <Route path="/events" element={<Events />} />
-              <Route path="/dashboard/*" element={<Dashboard />} />
+              <Route path="/dashboard/*" element={
+                <ProtectedRoute allowedRoles={['user']}>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/organizer/*" element={
+                <ProtectedRoute allowedRoles={['organizer']}>
+                  <OrganizerDashboard />
+                </ProtectedRoute>
+              } />
             </Routes>
           </main>
           <Footer />

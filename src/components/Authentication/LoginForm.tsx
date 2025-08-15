@@ -31,8 +31,18 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      await login(formData.email, formData.password);
-      navigate(from, { replace: true });
+      const role = await login(formData.email, formData.password);
+      // Redirect based on user role
+      switch (role) {
+        case 'admin':
+          navigate('/admin', { replace: true });
+          break;
+        case 'organizer':
+          navigate('/organizer', { replace: true });
+          break;
+        default:
+          navigate('/dashboard', { replace: true });
+      }
     } catch (err) {
       setError('Invalid email or password');
     } finally {
