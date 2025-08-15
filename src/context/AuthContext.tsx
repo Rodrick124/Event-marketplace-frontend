@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isAuthenticated: false,
   });
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, _password: string) => {
     try {
       // Mock login - replace with real API call
       // In a real app, this would come from your backend
@@ -43,7 +43,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         name: 'Test User',
         email,
         initials: getInitials('Test User'),
-        role: role
+        role,
+        organization: role === 'organizer' ? 'Test Organization' : undefined,
+        bio: '',
+        phone: '',
+        website: ''
       };
       
       setAuthState({
@@ -58,7 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signup = async (name: string, email: string, password: string) => {
+  const signup = async (name: string, email: string, _password: string) => {
     try {
       // Mock signup - replace with real API call
       let role: UserRole = 'user';
@@ -95,7 +99,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('auth_token');
   };
 
-  const loginWithGoogle = async (credential: string) => {
+  const loginWithGoogle = async (_credential: string) => {
     try {
       // Mock Google login - replace with real API call
       const mockUser: User = {
@@ -117,7 +121,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const loginWithFacebook = async (response: any) => {
+  const loginWithFacebook = async (_response: any) => {
     try {
       // Mock Facebook login - replace with real API call
       const mockUser: User = {
