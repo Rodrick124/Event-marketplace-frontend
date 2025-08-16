@@ -12,7 +12,7 @@ import Events from './pages/Events'
 import Footer from './components/Footer'
 import Dashboard from './pages/Dashboard/Dashboard'
 import OrganizerDashboard from './pages/Organizer/Dashboard'
-//import AdminDashboard from './pages/Admin/Dashboard'
+import AdminDashboard from './pages/Admin/Dashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -44,6 +44,11 @@ function App() {
               <Route path="/organizer/*" element={
                 <ProtectedRoute allowedRoles={['organizer']}>
                   <OrganizerDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/*" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminDashboard />
                 </ProtectedRoute>
               } />
             </Routes>

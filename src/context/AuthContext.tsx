@@ -343,7 +343,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const loginWithFacebook = async (response: any): Promise<void> => {
+  const loginWithFacebook = async (_response: any): Promise<void> => {
     // Placeholder implementation
     throw new Error('Facebook login not implemented');
   };
