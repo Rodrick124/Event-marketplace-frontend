@@ -1,4 +1,5 @@
 import API from './axios';
+import { extractData } from './response';
 import { 
   AdminStats, 
   AdminUser, 
@@ -18,14 +19,14 @@ export class AdminApiService {
   static async getDashboardStats(): Promise<AdminStats> {
     try {
       const response = await API.get<AdminApiResponse<AdminStats>>('/admin/dashboard/stats');
-      
-      if (response.data.success && response.data.data) {
-        return response.data.data;
-      } else if (response.data.totalUsers !== undefined) {
-        return response.data as AdminStats;
-      } else {
-        throw new Error('Invalid response structure');
+      const { data } = extractData<AdminStats | { stats: AdminStats }>(response.data);
+      if ((data as any)?.totalUsers !== undefined) {
+        return data as AdminStats;
       }
+      if ((data as any)?.stats) {
+        return (data as any).stats as AdminStats;
+      }
+      throw new Error('Invalid response structure');
     } catch (error: any) {
       console.error('Error fetching admin stats:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch dashboard statistics');
@@ -45,17 +46,15 @@ export class AdminApiService {
       });
 
       const response = await API.get<AdminApiResponse<AdminUser[]>>(`/admin/users?${params}`);
-      
-      if (response.data.success && response.data.data) {
-        return {
-          users: response.data.data,
-          pagination: response.data.pagination
-        };
-      } else if (Array.isArray(response.data)) {
-        return { users: response.data as AdminUser[] };
-      } else {
-        throw new Error('Invalid response structure');
-      }
+      const { data, pagination } = extractData<AdminUser[] | { users: AdminUser[]; data?: AdminUser[] }>(response.data);
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray((data as any)?.users)
+          ? (data as any).users
+          : Array.isArray((data as any)?.data)
+            ? (data as any).data
+            : [];
+      return { users: list, pagination };
     } catch (error: any) {
       console.error('Error fetching users:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch users');
@@ -75,17 +74,15 @@ export class AdminApiService {
       });
 
       const response = await API.get<AdminApiResponse<AdminEvent[]>>(`/admin/events?${params}`);
-      
-      if (response.data.success && response.data.data) {
-        return {
-          events: response.data.data,
-          pagination: response.data.pagination
-        };
-      } else if (Array.isArray(response.data)) {
-        return { events: response.data as AdminEvent[] };
-      } else {
-        throw new Error('Invalid response structure');
-      }
+      const { data, pagination } = extractData<AdminEvent[] | { events: AdminEvent[]; data?: AdminEvent[] }>(response.data);
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray((data as any)?.events)
+          ? (data as any).events
+          : Array.isArray((data as any)?.data)
+            ? (data as any).data
+            : [];
+      return { events: list, pagination };
     } catch (error: any) {
       console.error('Error fetching events:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch events');
@@ -105,17 +102,15 @@ export class AdminApiService {
       });
 
       const response = await API.get<AdminApiResponse<AdminReservation[]>>(`/admin/reservations?${params}`);
-      
-      if (response.data.success && response.data.data) {
-        return {
-          reservations: response.data.data,
-          pagination: response.data.pagination
-        };
-      } else if (Array.isArray(response.data)) {
-        return { reservations: response.data as AdminReservation[] };
-      } else {
-        throw new Error('Invalid response structure');
-      }
+      const { data, pagination } = extractData<AdminReservation[] | { reservations: AdminReservation[]; data?: AdminReservation[] }>(response.data);
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray((data as any)?.reservations)
+          ? (data as any).reservations
+          : Array.isArray((data as any)?.data)
+            ? (data as any).data
+            : [];
+      return { reservations: list, pagination };
     } catch (error: any) {
       console.error('Error fetching reservations:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch reservations');
@@ -135,17 +130,15 @@ export class AdminApiService {
       });
 
       const response = await API.get<AdminApiResponse<ActivityLog[]>>(`/admin/activity-logs?${params}`);
-      
-      if (response.data.success && response.data.data) {
-        return {
-          logs: response.data.data,
-          pagination: response.data.pagination
-        };
-      } else if (Array.isArray(response.data)) {
-        return { logs: response.data as ActivityLog[] };
-      } else {
-        throw new Error('Invalid response structure');
-      }
+      const { data, pagination } = extractData<ActivityLog[] | { logs: ActivityLog[]; data?: ActivityLog[] }>(response.data);
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray((data as any)?.logs)
+          ? (data as any).logs
+          : Array.isArray((data as any)?.data)
+            ? (data as any).data
+            : [];
+      return { logs: list, pagination };
     } catch (error: any) {
       console.error('Error fetching activity logs:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch activity logs');
@@ -158,14 +151,9 @@ export class AdminApiService {
   static async getRevenueAnalytics(period: 'week' | 'month' | 'year' = 'month'): Promise<RevenueData[]> {
     try {
       const response = await API.get<AdminApiResponse<RevenueData[]>>(`/admin/analytics/revenue?period=${period}`);
-      
-      if (response.data.success && response.data.data) {
-        return response.data.data;
-      } else if (Array.isArray(response.data)) {
-        return response.data as RevenueData[];
-      } else {
-        throw new Error('Invalid response structure');
-      }
+      const { data } = extractData<RevenueData[] | { data: RevenueData[] }>(response.data);
+      const list = Array.isArray(data) ? data : Array.isArray((data as any)?.data) ? (data as any).data : [];
+      return list;
     } catch (error: any) {
       console.error('Error fetching revenue analytics:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch revenue analytics');
@@ -178,14 +166,9 @@ export class AdminApiService {
   static async getUserGrowthAnalytics(period: 'week' | 'month' | 'year' = 'month'): Promise<UserGrowthData[]> {
     try {
       const response = await API.get<AdminApiResponse<UserGrowthData[]>>(`/admin/analytics/users?period=${period}`);
-      
-      if (response.data.success && response.data.data) {
-        return response.data.data;
-      } else if (Array.isArray(response.data)) {
-        return response.data as UserGrowthData[];
-      } else {
-        throw new Error('Invalid response structure');
-      }
+      const { data } = extractData<UserGrowthData[] | { data: UserGrowthData[] }>(response.data);
+      const list = Array.isArray(data) ? data : Array.isArray((data as any)?.data) ? (data as any).data : [];
+      return list;
     } catch (error: any) {
       console.error('Error fetching user growth analytics:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch user growth analytics');
@@ -246,14 +229,12 @@ export class AdminApiService {
   static async getUserDetails(userId: string): Promise<AdminUser> {
     try {
       const response = await API.get<AdminApiResponse<AdminUser>>(`/admin/users/${userId}`);
-      
-      if (response.data.success && response.data.data) {
-        return response.data.data;
-      } else if (response.data.id || response.data._id) {
-        return response.data as AdminUser;
-      } else {
-        throw new Error('User not found');
+      const { data } = extractData<AdminUser | { user: AdminUser }>(response.data);
+      const user = (data as any)?.user ? (data as any).user : data;
+      if ((user as any)?.id || (user as any)?._id) {
+        return user as AdminUser;
       }
+      throw new Error('User not found');
     } catch (error: any) {
       console.error('Error fetching user details:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch user details');
@@ -266,14 +247,12 @@ export class AdminApiService {
   static async getEventDetails(eventId: string): Promise<AdminEvent> {
     try {
       const response = await API.get<AdminApiResponse<AdminEvent>>(`/admin/events/${eventId}`);
-      
-      if (response.data.success && response.data.data) {
-        return response.data.data;
-      } else if (response.data._id) {
-        return response.data as AdminEvent;
-      } else {
-        throw new Error('Event not found');
+      const { data } = extractData<AdminEvent | { event: AdminEvent }>(response.data);
+      const event = (data as any)?.event ? (data as any).event : data;
+      if ((event as any)?._id) {
+        return event as AdminEvent;
       }
+      throw new Error('Event not found');
     } catch (error: any) {
       console.error('Error fetching event details:', error);
       throw new Error(error.response?.data?.message || 'Failed to fetch event details');

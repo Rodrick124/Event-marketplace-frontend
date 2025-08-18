@@ -7,4 +7,19 @@ const API = axios.create({
   },
 });
 
+// Attach auth token if present for protected endpoints
+API.interceptors.request.use((config) => {
+  try {
+    const token =
+      localStorage.getItem('auth_token') || localStorage.getItem('token');
+    if (token) {
+      config.headers = config.headers || {};
+      (config.headers as Record<string, string>).Authorization = `Bearer ${token}`;
+    }
+  } catch (_) {
+    // ignore storage errors
+  }
+  return config;
+});
+
 export default API;

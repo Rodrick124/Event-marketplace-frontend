@@ -1,6 +1,6 @@
 import { User } from '../context/types';
 import { Event } from './Events';
-import { Reservation, Ticket } from './Reservations';
+import { Reservation } from './Reservations';
 
 export interface AdminStats {
   totalUsers: number;
@@ -33,6 +33,7 @@ export interface ActivityLog {
 }
 
 export interface AdminUser extends User {
+  _id?: string;
   registrationDate: string;
   lastLoginDate?: string;
   isActive: boolean;

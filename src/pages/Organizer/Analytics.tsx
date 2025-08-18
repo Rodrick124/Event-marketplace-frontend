@@ -1,4 +1,4 @@
-import React from 'react';
+ 
 import { FaTicketAlt, FaDollarSign, FaUsers, FaChartLine } from 'react-icons/fa';
 
 const Analytics = () => {

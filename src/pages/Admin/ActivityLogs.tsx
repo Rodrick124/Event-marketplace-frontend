@@ -3,14 +3,13 @@ import { useAdmin } from '../../hooks/useAdmin';
 import { ActivityLog, AdminFilters } from '../../types/Admin';
 import { 
   FaSearch, 
-  FaDownload, 
   FaUserPlus,
   FaCalendarAlt,
   FaClipboardList,
   FaClock,
   FaUsers,
   FaEye,
-  FaFilter
+  
 } from 'react-icons/fa';
 
 const ActivityLogs = () => {
@@ -173,7 +172,7 @@ const ActivityLogs = () => {
           
           {activityLogs.length > 0 ? (
             <div className="space-y-4">
-              {activityLogs.map((log, index) => (
+              {activityLogs.map((log) => (
                 <div
                   key={log._id}
                   className={`p-4 rounded-lg border ${getActivityColor(log.type)} hover:shadow-sm transition-shadow cursor-pointer`}

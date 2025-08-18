@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FaUser, FaCalendar, FaCog, FaHome } from 'react-icons/fa';
 

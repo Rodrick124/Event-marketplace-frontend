@@ -114,7 +114,7 @@ export const useAdmin = (): UseAdminReturn => {
       // Update local state
       setUsers(prev => 
         prev.map(user => 
-          user.id === userId || user._id === userId
+          (user.id === userId || (user as any)._id === userId)
             ? { ...user, isBanned: banned, isActive: !banned }
             : user
         )
@@ -171,7 +171,7 @@ export const useAdmin = (): UseAdminReturn => {
       // Update local state
       setUsers(prev => 
         prev.map(user => 
-          user.id === userId || user._id === userId
+          (user.id === userId || (user as any)._id === userId)
             ? { ...user, verificationStatus: status }
             : user
         )

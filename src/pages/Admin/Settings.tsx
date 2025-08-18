@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   FaCog, 
   FaShieldAlt, 
   FaDatabase, 
-  FaEnvelope, 
   FaBell,
-  FaUsers,
   FaCalendarAlt,
   FaDollarSign,
   FaSave,
-  FaDownload,
-  FaUpload
+  FaDownload
 } from 'react-icons/fa';
 
 const Settings = () => {

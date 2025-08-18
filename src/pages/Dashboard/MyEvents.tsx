@@ -1,19 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Event } from '../../types/Events';
-import { useAuth } from '../../context/AuthContext';
 import axios from '../../services/axios';
+import { extractData } from '../../services/response';
+import { formatLocation } from '../../utils/format';
 
 const MyEvents = () => {
   const [registeredEvents, setRegisteredEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
+  
 
   useEffect(() => {
     const fetchRegisteredEvents = async () => {
       try {
         const response = await axios.get('/users/events');
-        setRegisteredEvents(response.data.data);
+        const { data } = extractData<Event[] | any>(response.data);
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.items)
+            ? data.items
+            : Array.isArray(data?.results)
+              ? data.results
+              : Array.isArray(data?.data)
+                ? data.data
+                : [];
+        setRegisteredEvents(list);
         setError(null);
       } catch (err) {
         setError('Failed to fetch your registered events. Please try again later.');
@@ -77,7 +88,7 @@ const MyEvents = () => {
                   <span className="font-medium">Time:</span> {event.time}
                 </p>
                 <p className="text-sm text-gray-600">
-                  <span className="font-medium">Location:</span> {event.location}
+                  <span className="font-medium">Location:</span> {formatLocation(event.location)}
                 </p>
                 <p className="text-sm text-gray-600">
                   <span className="font-medium">Category:</span> {event.category}

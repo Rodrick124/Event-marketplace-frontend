@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Event, EventApiResponse } from '../types/Events'; 
+import { Event } from '../types/Events'; 
 import API from '../services/axios';
+import { extractData } from '../services/response';
+import { formatLocation } from '../utils/format';
 import EventFilter from './EventFilter';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -16,14 +18,20 @@ const EventList: React.FC = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await API.get<EventApiResponse>('/events');
+        const response = await API.get('/events');
+        const { data } = extractData<Event[] | any>(response.data);
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.items)
+            ? data.items
+            : Array.isArray(data?.results)
+              ? data.results
+              : Array.isArray(data?.data)
+                ? data.data
+                : [];
 
-        if (response.data.success && Array.isArray(response.data.data)) {
-          setEvents(response.data.data);
-          setFilteredEvents(response.data.data);
-        } else {
-          throw new Error('Invalid API response');
-        }
+        setEvents(list);
+        setFilteredEvents(list);
       } catch (err: any) {
         setError(err.response?.data?.message || err.message || 'Unknown error');
       } finally {
@@ -37,7 +45,9 @@ const EventList: React.FC = () => {
   const handleFilterChange = (filters: { location: string; category: string }) => {
     let filtered = events;
     if (filters.location) {
-      filtered = filtered.filter(e => e.location.toLowerCase().includes(filters.location.toLowerCase()));
+      filtered = filtered.filter(e =>
+        formatLocation(e.location).toLowerCase().includes(filters.location.toLowerCase())
+      );
     }
     if (filters.category) {
       filtered = filtered.filter(e => e.category.toLowerCase().includes(filters.category.toLowerCase()));
@@ -88,7 +98,7 @@ const EventList: React.FC = () => {
               <h2 className="text-xl font-semibold mb-1">{event.title}</h2>
               <p className="text-gray-600 text-sm mb-2 line-clamp-3">{event.description}</p>
               <div className="text-sm text-gray-700 mb-1">📅 {event.date} at 🕒 {event.time}</div>
-              <div className="text-sm text-gray-700 mb-1">📍 {event.location}</div>
+              <div className="text-sm text-gray-700 mb-1">📍 {formatLocation(event.location)}</div>
               <div className="text-sm text-gray-700 mb-1">💰 ${event.price}</div>
               {event.organizer && (
                 <div className="text-sm text-gray-500 mt-2 italic">

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import API from '../services/axios';
 import { Event } from '../types/Events';
+import { extractData } from '../services/response';
 
 const EventCard: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -10,7 +11,17 @@ const EventCard: React.FC = () => {
     const fetchEvents = async () => {
       try {
         const response = await API.get('/events');
-        setEvents(response.data);
+        const { data } = extractData<Event[] | any>(response.data);
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.items)
+            ? data.items
+            : Array.isArray(data?.results)
+              ? data.results
+              : Array.isArray(data?.data)
+                ? data.data
+                : [];
+        setEvents(list);
       } catch (error) {
         console.error('Error fetching events:', error);
       } finally {

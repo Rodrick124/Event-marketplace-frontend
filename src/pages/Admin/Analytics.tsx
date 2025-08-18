@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { AdminApiService } from '../../services/adminApi';
 import { RevenueData, UserGrowthData } from '../../types/Admin';
 import { useAdmin } from '../../hooks/useAdmin';

@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useState } from 'react';
 
 const Settings = () => {
-  const { user } = useAuth();
+  
   const [formData, setFormData] = useState({
     emailNotifications: true,
     smsNotifications: false,

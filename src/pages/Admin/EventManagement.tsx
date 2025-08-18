@@ -13,6 +13,7 @@ import {
   FaUsers,
   FaDollarSign
 } from 'react-icons/fa';
+import { formatLocation } from '../../utils/format';
 
 const EventManagement = () => {
   const { 
@@ -237,7 +238,7 @@ const EventManagement = () => {
                 </div>
                 <div className="flex items-center text-gray-500 text-sm">
                   <FaMapMarkerAlt className="mr-2 h-3 w-3" />
-                  <span className="truncate">{event.location}</span>
+                  <span className="truncate">{formatLocation(event.location)}</span>
                 </div>
                 <div className="flex items-center text-gray-500 text-sm">
                   <FaUsers className="mr-2 h-3 w-3" />
@@ -430,7 +431,7 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ event, onClose, o
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Location</label>
-                <p className="text-sm text-gray-900">{event.location}</p>
+                <p className="text-sm text-gray-900">{formatLocation(event.location)}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

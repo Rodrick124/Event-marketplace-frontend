@@ -3,7 +3,6 @@ import { useAdmin } from '../../hooks/useAdmin';
 import { AdminUser, AdminFilters } from '../../types/Admin';
 import { 
   FaSearch, 
-  FaFilter, 
   FaDownload, 
   FaEye, 
   FaBan, 
@@ -49,7 +48,7 @@ const UserManagement = () => {
     }));
   };
 
-  const handleUserAction = async (userId: string, action: string, value?: any) => {
+  const handleUserAction = async (userId: string, action: string) => {
     try {
       setActionLoading(`${action}-${userId}`);
       
@@ -210,7 +209,7 @@ const UserManagement = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {users.map((user) => (
-                <tr key={user.id || user._id} className="hover:bg-gray-50">
+                <tr key={user.id || (user as any)._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="h-10 w-10 flex-shrink-0">
@@ -259,16 +258,16 @@ const UserManagement = () => {
                       {user.verificationStatus === 'pending' && (
                         <>
                           <button
-                            onClick={() => handleUserAction(user.id || user._id, 'verify')}
-                            disabled={actionLoading === `verify-${user.id || user._id}`}
+                            onClick={() => handleUserAction(user.id || (user as any)._id, 'verify')}
+                            disabled={actionLoading === `verify-${user.id || (user as any)._id}`}
                             className="text-green-600 hover:text-green-900 disabled:opacity-50"
                             title="Verify User"
                           >
                             <FaUserCheck className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => handleUserAction(user.id || user._id, 'reject')}
-                            disabled={actionLoading === `reject-${user.id || user._id}`}
+                            onClick={() => handleUserAction(user.id || (user as any)._id, 'reject')}
+                            disabled={actionLoading === `reject-${user.id || (user as any)._id}`}
                             className="text-red-600 hover:text-red-900 disabled:opacity-50"
                             title="Reject Verification"
                           >
@@ -279,8 +278,8 @@ const UserManagement = () => {
 
                       {user.isBanned ? (
                         <button
-                          onClick={() => handleUserAction(user.id || user._id, 'unban')}
-                          disabled={actionLoading === `unban-${user.id || user._id}`}
+                          onClick={() => handleUserAction(user.id || (user as any)._id, 'unban')}
+                          disabled={actionLoading === `unban-${user.id || (user as any)._id}`}
                           className="text-green-600 hover:text-green-900 disabled:opacity-50"
                           title="Unban User"
                         >
@@ -288,8 +287,8 @@ const UserManagement = () => {
                         </button>
                       ) : (
                         <button
-                          onClick={() => handleUserAction(user.id || user._id, 'ban')}
-                          disabled={actionLoading === `ban-${user.id || user._id}`}
+                          onClick={() => handleUserAction(user.id || (user as any)._id, 'ban')}
+                          disabled={actionLoading === `ban-${user.id || (user as any)._id}`}
                           className="text-red-600 hover:text-red-900 disabled:opacity-50"
                           title="Ban User"
                         >

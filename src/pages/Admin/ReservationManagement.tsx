@@ -7,6 +7,7 @@ import {
   FaEye, 
   FaTicketAlt
 } from 'react-icons/fa';
+import { formatLocation } from '../../utils/format';
 
 const ReservationManagement = () => {
   const { 
@@ -233,7 +234,7 @@ const ReservationManagement = () => {
                         {new Date(reservation.event.date).toLocaleDateString()}
                       </div>
                       <div className="text-xs text-gray-400">
-                        {reservation.event.location}
+                        {formatLocation(reservation.event.location)}
                       </div>
                     </div>
                   </td>
@@ -427,7 +428,7 @@ const ReservationDetailsModal: React.FC<ReservationDetailsModalProps> = ({ reser
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Location</label>
-                  <p className="text-sm text-gray-900">{reservation.event.location}</p>
+                  <p className="text-sm text-gray-900">{formatLocation(reservation.event.location)}</p>
                 </div>
               </div>
             </div>
