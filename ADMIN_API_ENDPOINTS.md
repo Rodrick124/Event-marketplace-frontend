@@ -280,7 +280,7 @@ Authorization: Bearer <admin_jwt_token>
 ## Analytics
 
 ### Get Revenue Analytics
-**Endpoint:** `GET /admin/analytics/revenue`
+**Endpoint:** `GET /dashboard/admin/analytics/revenue`
 **Query Parameters:**
 - `period` - Time period (week, month, year)
 
@@ -304,7 +304,7 @@ Authorization: Bearer <admin_jwt_token>
 ```
 
 ### Get User Growth Analytics
-**Endpoint:** `GET /admin/analytics/users`
+**Endpoint:** `GET /dashboard/admin/analytics/users`
 **Query Parameters:**
 - `period` - Time period (week, month, year)
 

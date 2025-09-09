@@ -129,7 +129,7 @@ export class AdminApiService {
         }
       });
 
-      const response = await API.get<AdminApiResponse<ActivityLog[]>>(`/admin/activity-logs?${params}`);
+      const response = await API.get<AdminApiResponse<ActivityLog[]>>(`/dashboard/admin/activity-logs?${params}`);
       const { data, pagination } = extractData<ActivityLog[] | { logs: ActivityLog[]; data?: ActivityLog[] }>(response.data);
       const list = Array.isArray(data)
         ? data
@@ -150,7 +150,7 @@ export class AdminApiService {
    */
   static async getRevenueAnalytics(period: 'week' | 'month' | 'year' = 'month'): Promise<RevenueData[]> {
     try {
-      const response = await API.get<AdminApiResponse<RevenueData[]>>(`/admin/analytics/revenue?period=${period}`);
+      const response = await API.get<AdminApiResponse<RevenueData[]>>(`/dashboard/admin/analytics/revenue?period=${period}`);
       const { data } = extractData<RevenueData[] | { data: RevenueData[] }>(response.data);
       const list = Array.isArray(data) ? data : Array.isArray((data as any)?.data) ? (data as any).data : [];
       return list;
@@ -165,7 +165,7 @@ export class AdminApiService {
    */
   static async getUserGrowthAnalytics(period: 'week' | 'month' | 'year' = 'month'): Promise<UserGrowthData[]> {
     try {
-      const response = await API.get<AdminApiResponse<UserGrowthData[]>>(`/admin/analytics/users?period=${period}`);
+      const response = await API.get<AdminApiResponse<UserGrowthData[]>>(`/dashboard/admin/analytics/users?period=${period}`);
       const { data } = extractData<UserGrowthData[] | { data: UserGrowthData[] }>(response.data);
       const list = Array.isArray(data) ? data : Array.isArray((data as any)?.data) ? (data as any).data : [];
       return list;
@@ -180,7 +180,7 @@ export class AdminApiService {
    */
   static async toggleUserBan(userId: string, banned: boolean): Promise<void> {
     try {
-      await API.patch(`/admin/users/${userId}/ban`, { banned });
+      await API.patch(`/dashboard/admin/users/${userId}/ban`, { banned });
     } catch (error: any) {
       console.error('Error toggling user ban:', error);
       throw new Error(error.response?.data?.message || 'Failed to update user status');
@@ -192,7 +192,7 @@ export class AdminApiService {
    */
   static async updateEventApproval(eventId: string, status: 'approved' | 'rejected', reason?: string): Promise<void> {
     try {
-      await API.patch(`/admin/events/${eventId}/approval`, { status, reason });
+      await API.patch(`/dashboard/admin/events/${eventId}/approval`, { status, reason });
     } catch (error: any) {
       console.error('Error updating event approval:', error);
       throw new Error(error.response?.data?.message || 'Failed to update event approval');
@@ -204,7 +204,7 @@ export class AdminApiService {
    */
   static async deleteEvent(eventId: string): Promise<void> {
     try {
-      await API.delete(`/admin/events/${eventId}`);
+      await API.delete(`/dashboard/admin/events/${eventId}`);
     } catch (error: any) {
       console.error('Error deleting event:', error);
       throw new Error(error.response?.data?.message || 'Failed to delete event');
@@ -216,7 +216,7 @@ export class AdminApiService {
    */
   static async updateUserVerification(userId: string, status: 'verified' | 'rejected', reason?: string): Promise<void> {
     try {
-      await API.patch(`/admin/users/${userId}/verification`, { status, reason });
+      await API.patch(`/dashboard/admin/users/${userId}/verification`, { status, reason });
     } catch (error: any) {
       console.error('Error updating user verification:', error);
       throw new Error(error.response?.data?.message || 'Failed to update user verification');
@@ -228,7 +228,7 @@ export class AdminApiService {
    */
   static async getUserDetails(userId: string): Promise<AdminUser> {
     try {
-      const response = await API.get<AdminApiResponse<AdminUser>>(`/admin/users/${userId}`);
+      const response = await API.get<AdminApiResponse<AdminUser>>(`/dashboard/admin/users/${userId}`);
       const { data } = extractData<AdminUser | { user: AdminUser }>(response.data);
       const user = (data as any)?.user ? (data as any).user : data;
       if ((user as any)?.id || (user as any)?._id) {
