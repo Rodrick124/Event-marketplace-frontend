@@ -107,12 +107,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         body: JSON.stringify({ email, password }),
       });
 
-      // Enhanced debugging
-      console.log('=== LOGIN DEBUG INFO ===');
-      console.log('Full API response:', JSON.stringify(response, null, 2));
-      console.log('Response keys:', Object.keys(response));
-      console.log('Response type:', typeof response);
-
       // Handle different possible response structures with extensive logging
       let userData, token;
       
@@ -155,9 +149,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           throw new Error('Invalid response structure from login API');
         }
       }
-
-      console.log('Extracted userData:', JSON.stringify(userData, null, 2));
-      console.log('Extracted token:', token ? 'Present' : 'Missing');
 
       // More flexible validation - check for common user identifier fields
       const userId = userData.id || userData._id || userData.userId || userData.user_id;

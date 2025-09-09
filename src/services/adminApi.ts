@@ -18,7 +18,7 @@ export class AdminApiService {
    */
   static async getDashboardStats(): Promise<AdminStats> {
     try {
-      const response = await API.get<AdminApiResponse<AdminStats>>('/admin/dashboard/stats');
+      const response = await API.get<AdminApiResponse<AdminStats>>('/dashboard/admin');
       const { data } = extractData<AdminStats | { stats: AdminStats }>(response.data);
       if ((data as any)?.totalUsers !== undefined) {
         return data as AdminStats;
@@ -45,7 +45,7 @@ export class AdminApiService {
         }
       });
 
-      const response = await API.get<AdminApiResponse<AdminUser[]>>(`/admin/users?${params}`);
+      const response = await API.get<AdminApiResponse<AdminUser[]>>(`/dashboard/admin/users?${params}`);
       const { data, pagination } = extractData<AdminUser[] | { users: AdminUser[]; data?: AdminUser[] }>(response.data);
       const list = Array.isArray(data)
         ? data
@@ -73,7 +73,7 @@ export class AdminApiService {
         }
       });
 
-      const response = await API.get<AdminApiResponse<AdminEvent[]>>(`/admin/events?${params}`);
+      const response = await API.get<AdminApiResponse<AdminEvent[]>>(`/dashboard/admin/events?${params}`);
       const { data, pagination } = extractData<AdminEvent[] | { events: AdminEvent[]; data?: AdminEvent[] }>(response.data);
       const list = Array.isArray(data)
         ? data
@@ -101,7 +101,7 @@ export class AdminApiService {
         }
       });
 
-      const response = await API.get<AdminApiResponse<AdminReservation[]>>(`/admin/reservations?${params}`);
+      const response = await API.get<AdminApiResponse<AdminReservation[]>>(`/dashboard/admin/reservations?${params}`);
       const { data, pagination } = extractData<AdminReservation[] | { reservations: AdminReservation[]; data?: AdminReservation[] }>(response.data);
       const list = Array.isArray(data)
         ? data

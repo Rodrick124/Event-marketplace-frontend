@@ -11,7 +11,7 @@ Authorization: Bearer <admin_jwt_token>
 ## Dashboard Statistics
 
 ### Get Admin Dashboard Stats
-**Endpoint:** `GET /admin/dashboard/stats`
+**Endpoint:** `GET /api/dashboard/admin`
 **Description:** Get comprehensive dashboard statistics
 **Response:**
 ```json
@@ -51,7 +51,7 @@ Authorization: Bearer <admin_jwt_token>
 ## User Management
 
 ### Get All Users
-**Endpoint:** `GET /admin/users`
+**Endpoint:** `GET /dashboard/admin/users`
 **Query Parameters:**
 - `page` - Page number (default: 1)
 - `limit` - Items per page (default: 10)
@@ -120,7 +120,7 @@ Authorization: Bearer <admin_jwt_token>
 ## Event Management
 
 ### Get All Events
-**Endpoint:** `GET /admin/events`
+**Endpoint:** `GET /dashboard/admin/events`
 **Query Parameters:**
 - `page`, `limit`, `search`, `sortBy`, `sortOrder` (same as users)
 - `status` - Filter by status (published, draft, cancelled, completed)
@@ -194,7 +194,7 @@ Authorization: Bearer <admin_jwt_token>
 ## Reservation Management
 
 ### Get All Reservations
-**Endpoint:** `GET /admin/reservations`
+**Endpoint:** `GET /dashboard/admin/reservations`
 **Query Parameters:** Same as other endpoints plus:
 - `status` - Filter by reservation status
 - `paymentStatus` - Filter by payment status
