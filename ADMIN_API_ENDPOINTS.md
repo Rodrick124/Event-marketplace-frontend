@@ -244,7 +244,7 @@ Authorization: Bearer <admin_jwt_token>
 ## Activity Logs
 
 ### Get Activity Logs
-**Endpoint:** `GET /admin/activity-logs`
+**Endpoint:** `GET /dashboard/admin/activity-logs`
 **Query Parameters:**
 - `page`, `limit`, `search`, `sortBy`, `sortOrder`
 - `type` - Filter by activity type
