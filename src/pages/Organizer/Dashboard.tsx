@@ -5,6 +5,7 @@ import OrganizerSidebar from './OrganizerSidebar';
 import Profile from './Profile';
 import MyEvents from './MyEvents';
 import Settings from './Settings';
+import Reservations from './Reservations';
 import Analytics from './Analytics';
 import CreateEvent from './CreateEvent';
 import EditEvent from './EditEvent'; // Assuming this component will be created
@@ -39,6 +40,7 @@ if (!isAuthenticated || !user) {
             <Route index element={<DashboardHome user={user} />} />
             <Route path="profile" element={<Profile />} />
             <Route path="my-events" element={<MyEvents />} />
+            <Route path="reservations" element={<Reservations />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="settings" element={<Settings />} />
             <Route path="create-event" element={<CreateEvent />} />

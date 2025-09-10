@@ -16,6 +16,23 @@ export interface OrganizerAnalyticsData {
   reservations: number;
 }
 
+export interface OrganizerReservation {
+  _id: string;
+  event: {
+    _id: string;
+    title: string;
+  };
+  user: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  quantity: number;
+  totalPrice: number;
+  status: 'confirmed' | 'cancelled' | 'pending';
+  createdAt: string;
+}
+
 /**
  * API service for organizer-related actions.
  * Note: The API endpoints used here (e.g., /organizer/events) are assumed based on project structure
@@ -51,6 +68,50 @@ export class OrganizerApiService {
     }
   }
 
+  /**
+   * Cancel a reservation.
+   * @param reservationId - The ID of the reservation to cancel.
+   */
+  static async cancelReservation(reservationId: string): Promise<OrganizerReservation> {
+    try {
+      // Using PATCH as we are updating the status of the reservation.
+      const response = await API.patch<AdminApiResponse<OrganizerReservation>>(`/dashboard/organizer/reservations/${reservationId}/cancel`);
+      const { data } = extractData<OrganizerReservation>(response.data);
+      return data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to cancel reservation');
+    }
+  }
+
+  /**
+   * Get reservations for the current organizer's events.
+   * @param filters - Optional filters for pagination, searching, and sorting.
+   */
+  static async getReservations(filters: AdminFilters = {}): Promise<{ reservations: OrganizerReservation[], pagination?: any }> {
+    try {
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params.append(key, value.toString());
+        }
+      });
+
+      const response = await API.get<AdminApiResponse<OrganizerReservation[]>>(`/dashboard/organizer/reservations?${params.toString()}`);
+      const { data, pagination } = extractData<OrganizerReservation[] | { reservations: OrganizerReservation[]; data?: OrganizerReservation[] }>(response.data);
+
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray((data as any)?.reservations)
+          ? (data as any).reservations
+          : Array.isArray((data as any)?.data)
+            ? (data as any).data
+            : [];
+
+      return { reservations: list, pagination };
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch reservations');
+    }
+  }
   /**
    * Get events for the current organizer.
    * @param filters - Optional filters for pagination, searching, and sorting.
@@ -102,10 +163,33 @@ export class OrganizerApiService {
   /**
    * Create a new event.
    * @param eventData - The data for the new event.
+   * @param imageFile - The image file for the event.
    */
-  static async createEvent(eventData: CreateEventPayload): Promise<OrganizerEvent> {
+  static async createEvent(eventData: CreateEventPayload, imageFile?: File | null): Promise<OrganizerEvent> {
     try {
-      const response = await API.post<AdminApiResponse<OrganizerEvent>>('/dashboard/organizer/events', eventData);
+      const payload = new FormData();
+
+      // Append text fields to FormData
+      for (const key in eventData) {
+        if (Object.prototype.hasOwnProperty.call(eventData, key)) {
+          const value = (eventData as any)[key];
+          if (value !== null && value !== undefined) {
+            if (key === 'date' && typeof value === 'string') {
+              // Convert local datetime string to ISO string for the backend
+              payload.append(key, new Date(value).toISOString());
+            } else {
+              payload.append(key, String(value));
+            }
+          }
+        }
+      }
+
+      // Append the new image file if it exists
+      if (imageFile) {
+        payload.append('image', imageFile);
+      }
+
+      const response = await API.post<AdminApiResponse<OrganizerEvent>>('/dashboard/organizer/create-event', payload);
       const { data } = extractData<OrganizerEvent>(response.data);
       return data;
     } catch (error: any) {
@@ -118,9 +202,32 @@ export class OrganizerApiService {
    * @param eventId - The ID of the event to update.
    * @param eventData - The data to update.
    */
-  static async updateEvent(eventId: string, eventData: UpdateEventPayload): Promise<OrganizerEvent> {
+  static async updateEvent(eventId: string, eventData: UpdateEventPayload, imageFile?: File | null): Promise<OrganizerEvent> {
     try {
-      const response = await API.put<AdminApiResponse<OrganizerEvent>>(`/dashboard/organizer/events/${eventId}`, eventData);
+      const payload = new FormData();
+
+      // Append text fields to FormData
+      for (const key in eventData) {
+        if (Object.prototype.hasOwnProperty.call(eventData, key)) {
+          const value = (eventData as any)[key];
+          // Exclude fields that should not be sent or are handled differently
+          if (key !== '_id' && key !== 'organizer' && key !== 'createdAt' && key !== 'updatedAt' && key !== 'imageUrl' && key !== '__v' && value !== null && value !== undefined) {
+            if (key === 'date' && typeof value === 'string') {
+              // Convert local datetime string to ISO string for the backend
+              payload.append(key, new Date(value).toISOString());
+            } else {
+              payload.append(key, String(value));
+            }
+          }
+        }
+      }
+
+      // Append the new image file if it exists
+      if (imageFile) {
+        payload.append('image', imageFile);
+      }
+
+      const response = await API.put<AdminApiResponse<OrganizerEvent>>(`/dashboard/organizer/events/${eventId}`, payload);
       const { data } = extractData<OrganizerEvent>(response.data);
       return data;
     } catch (error: any) {

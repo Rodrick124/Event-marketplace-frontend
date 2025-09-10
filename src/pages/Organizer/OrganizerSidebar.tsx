@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { FaUser, FaCalendar, FaCog, FaHome, FaChartBar, FaPlusCircle } from 'react-icons/fa';
+import { FaUser, FaCalendar, FaCog, FaHome, FaChartBar, FaPlusCircle, FaListAlt } from 'react-icons/fa';
 
 const OrganizerSidebar = () => {
   const location = useLocation();
@@ -7,6 +7,7 @@ const OrganizerSidebar = () => {
   const menuItems = [
     { path: '/organizer', label: 'Dashboard', icon: FaHome },
     { path: '/organizer/my-events', label: 'My Events', icon: FaCalendar },
+    { path: '/organizer/reservations', label: 'Reservations', icon: FaListAlt },
     { path: '/organizer/create-event', label: 'Create Event', icon: FaPlusCircle },
     { path: '/organizer/analytics', label: 'Analytics', icon: FaChartBar },
     { path: '/organizer/profile', label: 'Profile', icon: FaUser },
