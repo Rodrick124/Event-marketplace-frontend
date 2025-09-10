@@ -2,6 +2,9 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
+import About from './pages/About'
+import Contact from './pages/Contact'
+import NotFound from './pages/NotFound'
 import EventList from './components/EventList'
 import EventDetail from './components/EventDetail'
 import LoginForm from './components/Authentication/LoginForm'
@@ -33,6 +36,9 @@ function App() {
               } />
               <Route path="/login" element={<LoginForm />} />
               <Route path="/signup" element={<SignupForm />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="*" element={<NotFound />} />
               <Route path="/event/:id" element={<EventDetail/>} />
               <Route path="/reserve" element={<ReservationForm />} />
               <Route path="/events" element={<Events />} />
