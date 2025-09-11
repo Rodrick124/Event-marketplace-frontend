@@ -5,13 +5,17 @@ import { CreateEventPayload } from '../../types/Organizer';
 
 const CreateEvent: React.FC = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<CreateEventPayload>({
+  const [formData, setFormData] = useState({
     title: '',
     description: '',
     date: '',
-    location: '',
+    location: {
+      address: '',
+      city: '',
+      country: '',
+    },
     price: 0,
-    capacity: 1,
+    totalSeats: 1,
     category: '',
     status: 'draft',
   });
@@ -23,7 +27,18 @@ const CreateEvent: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name.startsWith('location.')) {
+      const locationField = name.split('.')[1] as keyof typeof formData.location;
+      setFormData(prev => ({
+        ...prev,
+        location: {
+          ...prev.location,
+          [locationField]: value,
+        }
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,7 +56,7 @@ const CreateEvent: React.FC = () => {
     setSuccessMessage(null);
 
     try {
-      await OrganizerApiService.createEvent(formData, imageFile);
+      await OrganizerApiService.createEvent(formData as unknown as CreateEventPayload, imageFile);
       setSuccessMessage('Event created successfully!');
       setTimeout(() => navigate('/organizer/my-events'), 2000);
     } catch (err: any) {
@@ -92,9 +107,14 @@ const CreateEvent: React.FC = () => {
             <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date and Time</label>
             <input type="datetime-local" name="date" id="date" value={formData.date} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
           </div>
-          <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700">Location</label>
-            <input type="text" name="location" id="location" value={formData.location} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">Location</label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <input type="text" name="location.address" placeholder="Address" value={formData.location.address} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
+              <input type="text" name="location.city" placeholder="City" value={formData.location.city} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
+              <input type="text" name="location.country" placeholder="Country" value={formData.location.country} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
           </div>
         </div>
 
@@ -104,8 +124,8 @@ const CreateEvent: React.FC = () => {
             <input type="number" name="price" id="price" value={formData.price} onChange={handleChange} required min="0" step="0.01" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
           </div>
           <div>
-            <label htmlFor="capacity" className="block text-sm font-medium text-gray-700">Capacity</label>
-            <input type="number" name="capacity" id="capacity" value={formData.capacity} onChange={handleChange} required min="1" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
+            <label htmlFor="totalSeats" className="block text-sm font-medium text-gray-700">Total Seats</label>
+            <input type="number" name="totalSeats" id="totalSeats" value={formData.totalSeats} onChange={handleChange} required min="1" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
           </div>
            <div>
             <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>

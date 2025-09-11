@@ -49,8 +49,8 @@ export class OrganizerApiService {
       const response = await API.get<AdminApiResponse<OrganizerDashboardStats>>(`/dashboard/organizer`);
       const { data } = extractData<OrganizerDashboardStats>(response.data);
       return data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch dashboard stats');
+    } catch (error) {
+      throw new Error((error as any).response?.data?.message || 'Failed to fetch dashboard stats');
     }
   }
 
@@ -63,8 +63,8 @@ export class OrganizerApiService {
       const response = await API.get<AdminApiResponse<OrganizerAnalyticsData[]>>(`/dashboard/organizer/analytics?period=${period}`);
       const { data } = extractData<OrganizerAnalyticsData[]>(response.data);
       return data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch analytics data');
+    } catch (error) {
+      throw new Error((error as any).response?.data?.message || 'Failed to fetch analytics data');
     }
   }
 
@@ -78,8 +78,8 @@ export class OrganizerApiService {
       const response = await API.patch<AdminApiResponse<OrganizerReservation>>(`/dashboard/organizer/reservations/${reservationId}/cancel`);
       const { data } = extractData<OrganizerReservation>(response.data);
       return data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to cancel reservation');
+    } catch (error) {
+      throw new Error((error as any).response?.data?.message || 'Failed to cancel reservation');
     }
   }
 
@@ -108,8 +108,8 @@ export class OrganizerApiService {
             : [];
 
       return { reservations: list, pagination };
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch reservations');
+    } catch (error) {
+      throw new Error((error as any).response?.data?.message || 'Failed to fetch reservations');
     }
   }
   /**
@@ -137,8 +137,8 @@ export class OrganizerApiService {
             : [];
 
       return { events: list, pagination };
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch events');
+    } catch (error) {
+      throw new Error((error as any).response?.data?.message || 'Failed to fetch events');
     }
   }
 
@@ -155,8 +155,8 @@ export class OrganizerApiService {
         return event as OrganizerEvent;
       }
       throw new Error('Event not found in response');
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch event details');
+    } catch (error) {
+      throw new Error((error as any).response?.data?.message || 'Failed to fetch event details');
     }
   }
 
@@ -174,7 +174,12 @@ export class OrganizerApiService {
         if (Object.prototype.hasOwnProperty.call(eventData, key)) {
           const value = (eventData as any)[key];
           if (value !== null && value !== undefined) {
-            if (key === 'date' && typeof value === 'string') {
+            if (key === 'location' && typeof value === 'object' && value !== null) {
+              // Handle nested location object for FormData
+              payload.append('location[address]', value.address || '');
+              payload.append('location[city]', value.city || '');
+              payload.append('location[country]', value.country || '');
+            } else if (key === 'date' && typeof value === 'string') {
               // Convert local datetime string to ISO string for the backend
               payload.append(key, new Date(value).toISOString());
             } else {
@@ -192,8 +197,8 @@ export class OrganizerApiService {
       const response = await API.post<AdminApiResponse<OrganizerEvent>>('/dashboard/organizer/create-event', payload);
       const { data } = extractData<OrganizerEvent>(response.data);
       return data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to create event');
+    } catch (error) {
+      throw new Error((error as any).response?.data?.message || 'Failed to create event');
     }
   }
 
@@ -230,8 +235,8 @@ export class OrganizerApiService {
       const response = await API.put<AdminApiResponse<OrganizerEvent>>(`/dashboard/organizer/events/${eventId}`, payload);
       const { data } = extractData<OrganizerEvent>(response.data);
       return data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to update event');
+    } catch (error) {
+      throw new Error((error as any).response?.data?.message || 'Failed to update event');
     }
   }
 
@@ -242,8 +247,8 @@ export class OrganizerApiService {
   static async deleteEvent(eventId: string): Promise<void> {
     try {
       await API.delete(`/dashboard/organizer/events/${eventId}`);
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Failed to delete event');
+    } catch (error) {
+      throw new Error((error as any).response?.data?.message || 'Failed to delete event');
     }
   }
 }

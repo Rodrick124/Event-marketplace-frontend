@@ -9,7 +9,6 @@ const OrganizerSidebar = () => {
     { path: '/organizer/my-events', label: 'My Events', icon: FaCalendar },
     { path: '/organizer/reservations', label: 'Reservations', icon: FaListAlt },
     { path: '/organizer/create-event', label: 'Create Event', icon: FaPlusCircle },
-    { path: '/organizer/analytics', label: 'Analytics', icon: FaChartBar },
     { path: '/organizer/profile', label: 'Profile', icon: FaUser },
     { path: '/organizer/settings', label: 'Settings', icon: FaCog },
   ];
