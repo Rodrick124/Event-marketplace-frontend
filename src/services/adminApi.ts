@@ -188,14 +188,21 @@ export class AdminApiService {
   }
 
   /**
-   * Approve/Reject an event
+   * Updates the approval status of an event.
+   * @param eventId The ID of the event to update.
+   * @param status The new status for the event.
    */
-  static async updateEventApproval(eventId: string, status: 'approved' | 'rejected', reason?: string): Promise<void> {
+  static async updateEventStatus(
+    eventId: string,
+    status: 'pending' | 'approved' | 'rejected'
+  ): Promise<{ _id: string; status: string }> {
     try {
-      await API.patch(`/dashboard/admin/events/${eventId}/approval`, { status, reason });
+      const response = await API.patch<AdminApiResponse<{ _id: string; status: string }>>(`/dashboard/admin/events/${eventId}/status`, { status });
+      const { data } = extractData<{ _id: string; status: string }>(response.data);
+      return data;
     } catch (error: any) {
-      console.error('Error updating event approval:', error);
-      throw new Error(error.response?.data?.message || 'Failed to update event approval');
+      console.error('Error updating event status:', error);
+      throw new Error(error.response?.data?.message || 'Failed to update event status');
     }
   }
 

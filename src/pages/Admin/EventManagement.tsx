@@ -22,7 +22,7 @@ const EventManagement = () => {
     error, 
     pagination,
     refetchEvents, 
-    updateEventApproval,
+    updateEventStatus,
     deleteEvent,
     exportData 
   } = useAdmin();
@@ -52,16 +52,16 @@ const EventManagement = () => {
     }));
   };
 
-  const handleEventAction = async (eventId: string, action: string, reason?: string) => {
+  const handleEventAction = async (eventId: string, action: string) => {
     try {
       setActionLoading(`${action}-${eventId}`);
       
       switch (action) {
         case 'approve':
-          await updateEventApproval(eventId, 'approved');
+          await updateEventStatus(eventId, 'approved');
           break;
         case 'reject':
-          await updateEventApproval(eventId, 'rejected', reason);
+          await updateEventStatus(eventId, 'rejected');
           break;
         case 'delete':
           if (confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
@@ -276,7 +276,7 @@ const EventManagement = () => {
                         <FaCheck className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => handleEventAction(event._id, 'reject', 'Rejected by admin')}
+                        onClick={() => handleEventAction(event._id, 'reject')}
                         disabled={actionLoading === `reject-${event._id}`}
                         className="p-1 text-red-600 hover:text-red-900 disabled:opacity-50"
                         title="Reject Event"
@@ -376,7 +376,7 @@ const EventManagement = () => {
 interface EventDetailsModalProps {
   event: AdminEvent;
   onClose: () => void;
-  onAction: (eventId: string, action: string, reason?: string) => void;
+  onAction: (eventId: string, action: string) => void;
   actionLoading: string | null;
 }
 
@@ -473,7 +473,7 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({ event, onClose, o
           {event.approvalStatus === 'pending' && (
             <div className="mt-6 flex justify-end space-x-3">
               <button
-                onClick={() => onAction(event._id, 'reject', 'Rejected by admin')}
+                onClick={() => onAction(event._id, 'reject')}
                 disabled={actionLoading === `reject-${event._id}`}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
               >

@@ -17,7 +17,7 @@ interface UseAdminReturn {
   refetchReservations: (filters?: AdminFilters) => Promise<void>;
   refetchActivityLogs: (filters?: AdminFilters) => Promise<void>;
   toggleUserBan: (userId: string, banned: boolean) => Promise<void>;
-  updateEventApproval: (eventId: string, status: 'approved' | 'rejected', reason?: string) => Promise<void>;
+  updateEventStatus: (eventId: string, status: 'pending' | 'approved' | 'rejected') => Promise<void>;
   deleteEvent: (eventId: string) => Promise<void>;
   updateUserVerification: (userId: string, status: 'verified' | 'rejected', reason?: string) => Promise<void>;
   exportData: (type: 'users' | 'events' | 'reservations', filters?: AdminFilters) => Promise<void>;
@@ -128,15 +128,15 @@ export const useAdmin = (): UseAdminReturn => {
     }
   }, [refetchStats]);
 
-  const updateEventApproval = useCallback(async (eventId: string, status: 'approved' | 'rejected', reason?: string) => {
+  const updateEventStatus = useCallback(async (eventId: string, status: 'pending' | 'approved' | 'rejected') => {
     try {
-      await AdminApiService.updateEventApproval(eventId, status, reason);
+      const updatedEvent = await AdminApiService.updateEventStatus(eventId, status);
       
       // Update local state
       setEvents(prev => 
         prev.map(event => 
           event._id === eventId
-            ? { ...event, approvalStatus: status, isApproved: status === 'approved' }
+            ? { ...event, approvalStatus: updatedEvent.status as 'pending' | 'approved' | 'rejected', isApproved: updatedEvent.status === 'approved' }
             : event
         )
       );
@@ -144,8 +144,8 @@ export const useAdmin = (): UseAdminReturn => {
       // Refetch stats to get updated counts
       await refetchStats();
     } catch (err: any) {
-      console.error('Error updating event approval:', err);
-      throw new Error(err.message || 'Failed to update event approval');
+      console.error('Error updating event status:', err);
+      throw new Error(err.message || 'Failed to update event status');
     }
   }, [refetchStats]);
 
@@ -224,7 +224,7 @@ export const useAdmin = (): UseAdminReturn => {
     refetchReservations,
     refetchActivityLogs,
     toggleUserBan,
-    updateEventApproval,
+    updateEventStatus,
     deleteEvent,
     updateUserVerification,
     exportData
