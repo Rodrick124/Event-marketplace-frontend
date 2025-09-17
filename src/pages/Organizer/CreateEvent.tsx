@@ -137,7 +137,7 @@ const CreateEvent: React.FC = () => {
           <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
           <select name="status" id="status" value={formData.status} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" >
             <option value="draft">Draft</option>
-            <option value="published">Published</option>
+            <option value="pending">Submit for Review</option>
           </select>
         </div>
 

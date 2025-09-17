@@ -1,6 +1,7 @@
 import API from './axios';
 import { extractData } from './response';
 import { AdminFilters, AdminApiResponse } from '../types/Admin';
+// @ts-ignore
 import { CreateEventPayload, UpdateEventPayload, OrganizerEvent } from '../types/Organizer';
 
 export interface OrganizerDashboardStats {
@@ -179,9 +180,15 @@ export class OrganizerApiService {
               payload.append('location[address]', value.address || '');
               payload.append('location[city]', value.city || '');
               payload.append('location[country]', value.country || '');
-            } else if (key === 'date' && typeof value === 'string') {
+            } else if (key === 'date' && typeof value === 'string' && value) {
+              const dateObj = new Date(value);
               // Convert local datetime string to ISO string for the backend
-              payload.append(key, new Date(value).toISOString());
+              payload.append(key, dateObj.toISOString());
+
+              // Extract and append time as HH:mm, as required by the API
+              const hours = String(dateObj.getHours()).padStart(2, '0');
+              const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+              payload.append('time', `${hours}:${minutes}`);
             } else {
               payload.append(key, String(value));
             }
