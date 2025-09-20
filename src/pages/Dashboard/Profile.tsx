@@ -1,128 +1,115 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import React, { useState, useEffect } from 'react';
+import API from '../../services/axios';
+import { extractData } from '../../services/response';
+
+interface UserProfile {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  profile: {
+    avatar?: string;
+    phone?: string;
+    bio?: string;
+    organization?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
 
 const Profile = () => {
-  const { user, isAuthenticated } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    bio: user?.bio || ''
-  });
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // Implement profile update logic here
-    setIsEditing(false);
-  };
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setIsLoading(true);
+        const response = await API.get('/dashboard/profile');
+        const { data } = extractData<UserProfile>(response.data);
+        setProfile(data);
+      } catch (err: any) {
+        setError(err.response?.data?.message || err.message || 'Failed to load profile data.');
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  if (!isAuthenticated || !user) {
-    return null;
+    fetchProfile();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+        <p className="font-bold">Error</p>
+        <p>{error}</p>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return <div className="text-center p-8">Could not load profile.</div>;
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-6">My Profile</h1>
-      
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-4">
-            <div className="h-16 w-16 rounded-full bg-blue-600 flex items-center justify-center">
-              <span className="text-white text-xl font-semibold">
-                {user.initials || user.name.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold">{user.name}</h2>
-              <p className="text-gray-500">{user.email}</p>
-            </div>
+    <div className="bg-white p-8 rounded-lg shadow-md max-w-4xl mx-auto">
+      <div className="flex flex-col sm:flex-row items-center mb-8 pb-8 border-b border-gray-200">
+        <img
+          src={profile.profile.avatar || `https://i.pravatar.cc/150?u=${profile.email}`}
+          alt="User Avatar"
+          className="w-24 h-24 rounded-full mr-0 sm:mr-6 mb-4 sm:mb-0 object-cover"
+        />
+        <div className="text-center sm:text-left">
+          <h2 className="text-3xl font-bold text-gray-800">{profile.name}</h2>
+          <p className="text-md text-gray-500">{profile.email}</p>
+          <div className="mt-2 flex items-center justify-center sm:justify-start space-x-2">
+            <span className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize">
+              {profile.role}
+            </span>
+            <span className={`inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize ${
+              profile.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+            }`}>
+              {profile.status}
+            </span>
           </div>
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700"
-          >
-            {isEditing ? 'Cancel' : 'Edit Profile'}
-          </button>
         </div>
-
-        {isEditing ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Bio
-              </label>
-              <textarea
-                value={formData.bio}
-                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-            </div>
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-700"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-              >
-                Save Changes
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-sm font-medium text-gray-500">Contact Information</h3>
-              <div className="mt-2 space-y-2">
-                <p className="text-sm text-gray-900">Email: {user.email}</p>
-                <p className="text-sm text-gray-900">Phone: {user.phone || 'Not provided'}</p>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-500">About</h3>
-              <p className="mt-2 text-sm text-gray-900">{user.bio || 'No bio provided'}</p>
-            </div>
+      </div>
+      
+      <div>
+        <h3 className="text-xl font-semibold text-gray-700 mb-4">Profile Details</h3>
+        <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+          <div className="sm:col-span-1">
+            <dt className="text-sm font-medium text-gray-500">Phone Number</dt>
+            <dd className="mt-1 text-md text-gray-900">{profile.profile.phone || 'Not provided'}</dd>
           </div>
-        )}
+          <div className="sm:col-span-1">
+            <dt className="text-sm font-medium text-gray-500">Organization</dt>
+            <dd className="mt-1 text-md text-gray-900">{profile.profile.organization || 'Not provided'}</dd>
+          </div>
+          <div className="sm:col-span-2">
+            <dt className="text-sm font-medium text-gray-500">Bio</dt>
+            <dd className="mt-1 text-md text-gray-900 whitespace-pre-wrap">{profile.profile.bio || 'Not provided'}</dd>
+          </div>
+          <div className="sm:col-span-1">
+            <dt className="text-sm font-medium text-gray-500">Member Since</dt>
+            <dd className="mt-1 text-md text-gray-900">{new Date(profile.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</dd>
+          </div>
+          <div className="sm:col-span-1">
+            <dt className="text-sm font-medium text-gray-500">Last Updated</dt>
+            <dd className="mt-1 text-md text-gray-900">{new Date(profile.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</dd>
+          </div>
+        </dl>
       </div>
     </div>
   );
