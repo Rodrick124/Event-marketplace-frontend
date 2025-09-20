@@ -43,7 +43,7 @@ function App() {
               <Route path="/reserve" element={<ReservationForm />} />
               <Route path="/events" element={<Events />} />
               <Route path="/dashboard/*" element={
-                <ProtectedRoute allowedRoles={['user']}>
+                <ProtectedRoute allowedRoles={['attendee']}>
                   <Dashboard />
                 </ProtectedRoute>
               } />
