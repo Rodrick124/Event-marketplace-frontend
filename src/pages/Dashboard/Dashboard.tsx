@@ -1,15 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { Route, Routes, useNavigate, Link } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
 import Profile from './Profile';
 import MyEvents from './MyEvents';
 import Settings from './Settings';
 import API from '../../services/axios';
 
+interface ReservationInfo {
+  _id: string;
+  eventId: { // This can be null if the event was deleted
+    _id: string;
+    name: string;
+  } | null;
+}
+
+interface User {
+  name: string;
+}
+
 interface AttendeeDashboardStats {
-  upcoming: any[];
-  past: any[];
+  upcoming: ReservationInfo[];
+  past: ReservationInfo[];
   spending: number;
 }
 
@@ -45,7 +57,7 @@ const Dashboard = () => {
   );
 };
 
-const DashboardHome = ({ user }: { user: any }) => {
+const DashboardHome = ({ user }: { user: User }) => {
   const [stats, setStats] = useState<AttendeeDashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -109,6 +121,56 @@ const DashboardHome = ({ user }: { user: any }) => {
             {formatCurrency(stats?.spending || 0)}
           </p>
           <p className="text-sm text-gray-500">On event tickets</p>
+        </div>
+      </div>
+
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Upcoming Events List */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-700">Upcoming Events</h2>
+          <div className="bg-white rounded-lg shadow-sm">
+            {stats?.upcoming && stats.upcoming.length > 0 ? (
+              <ul className="divide-y divide-gray-200">
+                {stats.upcoming.map((reservation) =>
+                  // Add a check to ensure eventId is not null to prevent crashes
+                  reservation.eventId && (
+                    <li key={reservation._id} className="px-6 py-4 flex justify-between items-center">
+                      <span className="font-medium text-gray-800">{reservation.eventId.name}</span>
+                      <Link to={`/event/${reservation.eventId._id}`} className="text-sm text-blue-600 hover:text-blue-800 font-semibold">
+                        View Details
+                      </Link>
+                    </li>
+                  )
+                )}
+              </ul>
+            ) : (
+              <p className="text-gray-500 p-6">You have no upcoming events.</p>
+            )}
+          </div>
+        </div>
+
+        {/* Past Events List */}
+        <div>
+          <h2 className="text-xl font-semibold mb-4 text-gray-700">Past Events</h2>
+          <div className="bg-white rounded-lg shadow-sm">
+            {stats?.past && stats.past.length > 0 ? (
+              <ul className="divide-y divide-gray-200">
+                {stats.past.map((reservation) =>
+                  // Add a check to ensure eventId is not null to prevent crashes
+                  reservation.eventId && (
+                    <li key={reservation._id} className="px-6 py-4 flex justify-between items-center">
+                      <span className="font-medium text-gray-800">{reservation.eventId.name}</span>
+                      <Link to={`/event/${reservation.eventId._id}`} className="text-sm text-blue-600 hover:text-blue-800 font-semibold">
+                        View Details
+                      </Link>
+                    </li>
+                  )
+                )}
+              </ul>
+            ) : (
+              <p className="text-gray-500 p-6">You have no past events on record.</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

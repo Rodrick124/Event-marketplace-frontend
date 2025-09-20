@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Event } from '../../types/Events';
 import axios from '../../services/axios';
 import { extractData } from '../../services/response';
@@ -13,20 +14,23 @@ const MyEvents = () => {
   useEffect(() => {
     const fetchRegisteredEvents = async () => {
       try {
-        const response = await axios.get('/users/events');
-        const { data } = extractData<Event[] | any>(response.data);
-        const list = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.items)
-            ? data.items
-            : Array.isArray(data?.results)
-              ? data.results
-              : Array.isArray(data?.data)
-                ? data.data
-                : [];
-        setRegisteredEvents(list);
+        const response = await axios.get('/dashboard/attendee/events');
+        const { data: reservations } = extractData<any[]>(response.data);
+
+        if (Array.isArray(reservations)) {
+          const events = reservations
+            .filter(reservation => reservation.eventId) // Ensure event data exists
+            .map(reservation => {
+              const eventData = reservation.eventId;
+              // Map API response to the Event type used by the component
+              return { ...eventData, image: eventData.imageUrl };
+            });
+          setRegisteredEvents(events);
+        } else {
+          setRegisteredEvents([]);
+        }
         setError(null);
-      } catch (err) {
+      } catch (err: any) {
         setError('Failed to fetch your registered events. Please try again later.');
       } finally {
         setIsLoading(false);
@@ -96,14 +100,12 @@ const MyEvents = () => {
               </div>
               <div className="mt-4 flex justify-between items-center">
                 <span className="text-blue-600 font-medium">${event.price}</span>
-                <button
+                <Link
+                  to={`/event/${event._id}`}
                   className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-300"
-                  onClick={() => {
-                    // Implement view details logic
-                  }}
                 >
                   View Details
-                </button>
+                </Link>
               </div>
             </div>
           </div>
