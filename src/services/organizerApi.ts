@@ -224,9 +224,20 @@ export class OrganizerApiService {
           const value = (eventData as any)[key];
           // Exclude fields that should not be sent or are handled differently
           if (key !== '_id' && key !== 'organizer' && key !== 'createdAt' && key !== 'updatedAt' && key !== 'imageUrl' && key !== '__v' && value !== null && value !== undefined) {
-            if (key === 'date' && typeof value === 'string') {
+            if (key === 'location' && typeof value === 'object' && value !== null) {
+              // Handle nested location object for FormData
+              payload.append('location[address]', value.address || '');
+              payload.append('location[city]', value.city || '');
+              payload.append('location[country]', value.country || '');
+            } else if (key === 'date' && typeof value === 'string' && value) {
+              const dateObj = new Date(value);
               // Convert local datetime string to ISO string for the backend
-              payload.append(key, new Date(value).toISOString());
+              payload.append(key, dateObj.toISOString());
+
+              // Also update time if date is being updated
+              const hours = String(dateObj.getHours()).padStart(2, '0');
+              const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+              payload.append('time', `${hours}:${minutes}`);
             } else {
               payload.append(key, String(value));
             }
@@ -239,7 +250,7 @@ export class OrganizerApiService {
         payload.append('image', imageFile);
       }
 
-      const response = await API.put<AdminApiResponse<OrganizerEvent>>(`/dashboard/organizer/events/${eventId}`, payload);
+      const response = await API.patch<AdminApiResponse<OrganizerEvent>>(`/dashboard/organizer/events/${eventId}`, payload);
       const { data } = extractData<OrganizerEvent>(response.data);
       return data;
     } catch (error) {

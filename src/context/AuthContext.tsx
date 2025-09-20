@@ -111,28 +111,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       let userData, token;
       
       if (response.user && response.token) {
-        console.log('Using structure: { user: {...}, token: "..." }');
         userData = response.user;
         token = response.token;
       } else if (response.data && response.data.user && response.data.token) {
-        console.log('Using structure: { data: { user: {...}, token: "..." } }');
         userData = response.data.user;
         token = response.data.token;
       } else if (response.id && response.email) {
-        console.log('Using structure: user data directly in response');
         userData = response;
         token = response.token || response.accessToken || response.access_token;
       } else if (response.success && response.data) {
-        console.log('Using structure: { success: true, data: {...} }');
         userData = response.data;
         token = response.data.token || response.token;
       } else if (response.message && response.user) {
-        console.log('Using structure: { message: "...", user: {...} }');
         userData = response.user;
         token = response.token || response.user.token;
       } else {
-        console.log('No matching structure found. Available keys:', Object.keys(response));
-        console.log('Attempting to extract user data from response...');
         
         // Try to find user-like data in the response
         const possibleUserData = response.user || response.data || response;
@@ -141,11 +134,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                              (response.user && response.user.token);
         
         if (possibleUserData && possibleToken) {
-          console.log('Found possible user data and token');
           userData = possibleUserData;
           token = possibleToken;
         } else {
-          console.error('Could not extract user data and token from response');
           throw new Error('Invalid response structure from login API');
         }
       }
@@ -159,17 +150,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (!userId) {
-        console.error('Missing user ID. Available userData keys:', Object.keys(userData));
         throw new Error('No user ID found in server response');
       }
 
       if (!userEmail) {
-        console.error('Missing user email. Available userData keys:', Object.keys(userData));
         throw new Error('No user email found in server response');
       }
 
       if (!token) {
-        console.error('Missing token. Full response:', JSON.stringify(response, null, 2));
         throw new Error('No authentication token received from server');
       }
 
@@ -185,8 +173,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         website: userData.website || userData.websiteUrl || userData.website_url,
       };
 
-      console.log('Final user object:', JSON.stringify(user, null, 2));
-      console.log('=== END LOGIN DEBUG ===');
       
       setAuthState({
         user,
@@ -196,7 +182,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('auth_token', token);
       return user.role;
     } catch (error: any) {
-      console.error('Login error:', error);
       throw new Error(error.message || 'Login failed');
     }
   };
