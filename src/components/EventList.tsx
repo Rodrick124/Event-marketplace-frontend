@@ -6,14 +6,17 @@ import { formatLocation } from '../utils/format';
 import EventFilter from './EventFilter';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 const EventList: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const { addToCart, isLoading: isCartLoading } = useCart();
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -64,13 +67,20 @@ const EventList: React.FC = () => {
     navigate(`/events/${eventId}`);
   };
 
-  const handleAddToList = (eventId: string) => {
-    if (!isAuthenticated || !localStorage.getItem('auth_token')) {
+  const handleAddToCart = async (eventId: string) => {
+    if (!isAuthenticated) {
       navigate('/signup');
       return;
     }
-    // Example: add to cart logic (could be API call or local state)
-    alert('Added event to your list: ' + eventId);
+    setAddingToCart(eventId);
+    try {
+      await addToCart(eventId, 1); // Add a single ticket to the cart
+    } catch (err) {
+      console.error("Failed to add item to cart:", err);
+      alert('Could not add item to cart. Please try again.');
+    } finally {
+      setAddingToCart(null);
+    }
   };
 
   if (loading) return <div className="text-gray-500">Loading events...</div>;
@@ -112,12 +122,15 @@ const EventList: React.FC = () => {
                 >
                   Buy Your Ticket
                 </button>
-                <button
-                  className="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 px-4 py-2 rounded"
-                  onClick={() => handleAddToList(event._id)}
-                >
-                  Add to My List
-                </button>
+                {isAuthenticated && user?.role === 'attendee' && (
+                  <button
+                    className="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => handleAddToCart(event._id)}
+                    disabled={addingToCart === event._id || isCartLoading}
+                  >
+                    {addingToCart === event._id ? 'Adding...' : 'Add to Cart'}
+                  </button>
+                )}
               </div>
             </div>
           </div>

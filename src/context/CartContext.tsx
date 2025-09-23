@@ -103,7 +103,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const removeFromCart = (itemId: string) => handleCartUpdate(API.delete(`/cart/items/${itemId}`));
   const clearCart = () => handleCartUpdate(API.delete('/cart'));
 
-  const itemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
+  //  Count the number of unique items (event types) in the cart, not the total quantity of tickets.
+  const itemCount = cart?.items.length || 0;
 
   const value = {
     cart,
