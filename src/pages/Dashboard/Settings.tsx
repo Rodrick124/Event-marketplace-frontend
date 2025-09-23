@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ChangePasswordForm from '../../components/ChangePasswordForm';
 
 const Settings = () => {
   
@@ -130,6 +131,9 @@ const Settings = () => {
           </div>
         </div>
       </div>
+
+      {/* Change Password Section */}
+      <ChangePasswordForm />
 
       {/* Account Danger Zone */}
       <div className="mt-8">

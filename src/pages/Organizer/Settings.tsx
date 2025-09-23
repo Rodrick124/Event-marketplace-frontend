@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ChangePasswordForm from '../../components/ChangePasswordForm';
 
 const Settings = () => {
   
@@ -18,6 +19,9 @@ const Settings = () => {
     <div className="container mx-auto px-4">
       <div className="max-w-3xl mx-auto">
         <h1 className="text-2xl font-semibold mb-6">Settings</h1>
+
+        {/* Change Password Section */}
+        <ChangePasswordForm />
 
         <div className="bg-white rounded-lg shadow">
           <form onSubmit={handleSubmit} className="space-y-6 p-6">
