@@ -68,12 +68,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const userData = await apiRequest('/auth/me');
           
           // Validate that we have the required user data
-          if (!userData || !userData.id || !userData.email) {
+          const userId = userData._id || userData.id;
+          if (!userData || !userId || !userData.email) {
             throw new Error('Invalid user data received from server');
           }
 
           const user: User = {
-            id: userData.id,
+            id: userId,
             name: userData.name || 'Unknown User',
             email: userData.email,
             role: userData.role || 'user',

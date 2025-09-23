@@ -36,7 +36,7 @@ const Profile = () => {
     const fetchProfile = async () => {
       try {
         setIsLoading(true);
-        const response = await API.get('/dashboard/profile');
+        const response = await API.get('/auth/me');
         const { data } = extractData<UserProfile>(response.data);
         setProfile(data);
         setFormData({
