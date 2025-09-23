@@ -13,11 +13,12 @@ const EventDetail: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { addToCart, isLoading: isCartLoading } = useCart();
+  const { addToCart, isLoading: isCartLoading, refetchCart } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [quantity, setQuantity] = useState(1);
+  const [isProcessingPurchase, setIsProcessingPurchase] = useState(false);
   const [addStatus, setAddStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState('');
 
@@ -58,12 +59,28 @@ const EventDetail: React.FC = () => {
 
   const handleBuyNow = async () => {
     if (!event) return;
+    setIsProcessingPurchase(true);
+    setAddStatus('idle');
+    setStatusMessage('');
     try {
-      await addToCart(event._id, quantity);
-      navigate('/cart');
+      await API.post('/reservations', {
+        eventId: event._id,
+        ticketQuantity: quantity,
+      });
+
+      // If the user buys an item that might be in their cart, the cart should be updated.
+      refetchCart();
+
+      setAddStatus('success');
+      setStatusMessage('Reservation successful! Redirecting to your tickets...');
+
+      setTimeout(() => {
+        navigate('/dashboard/my-events');
+      }, 2000);
     } catch (err: any) {
       setAddStatus('error');
-      setStatusMessage(err.message || 'Could not process purchase. Please try again.');
+      setStatusMessage(err.response?.data?.message || 'Could not complete reservation. Please try again.');
+      setIsProcessingPurchase(false);
     }
   };
 
@@ -175,17 +192,17 @@ const EventDetail: React.FC = () => {
                       <div className="space-y-2">
                         <button
                           onClick={handleAddToCart}
-                          disabled={isCartLoading || event.availableSeats === 0}
+                          disabled={isCartLoading || isProcessingPurchase || event.availableSeats === 0}
                           className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium transition-colors duration-300 disabled:bg-blue-300 disabled:cursor-not-allowed"
                         >
-                          {isCartLoading && addStatus !== 'error' ? 'Adding...' : event.availableSeats === 0 ? 'Sold Out' : 'Add to Cart'}
+                          {isCartLoading ? 'Adding...' : event.availableSeats === 0 ? 'Sold Out' : 'Add to Cart'}
                         </button>
                         <button
                           onClick={handleBuyNow}
-                          disabled={isCartLoading || event.availableSeats === 0}
+                          disabled={isCartLoading || isProcessingPurchase || event.availableSeats === 0}
                           className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-medium transition-colors duration-300 disabled:bg-green-300 disabled:cursor-not-allowed"
                         >
-                          Buy Now
+                          {isProcessingPurchase ? 'Reserving...' : 'Buy Now'}
                         </button>
                       </div>
                       {addStatus === 'success' && <p className="text-green-600 text-sm text-center">{statusMessage}</p>}

@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../../services/axios';
-import { extractData } from '../../services/response';
 
-// Based on OrganizerReservation and what an attendee might need
+// Based on GET /api/reservations/me
 interface AttendeeReservation {
   _id: string;
-  event: {
+  eventId: {
     _id: string;
     title: string;
     date: string;
-    location: string; // Assuming simple string for now
   } | null;
-  quantity: number;
+  ticketQuantity: number;
   totalPrice: number;
-  status: 'confirmed' | 'pending' | 'cancelled';
+  status: 'confirmed' | 'pending' | 'cancelled' | 'reserved';
   createdAt: string;
 }
 
@@ -22,6 +20,7 @@ const MyEvents: React.FC = () => {
   const [reservations, setReservations] = useState<AttendeeReservation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMyReservations = async () => {
@@ -29,9 +28,14 @@ const MyEvents: React.FC = () => {
       setError(null);
       try {
         // Assuming an endpoint to get reservations for the logged-in attendee
-        const response = await API.get('/reservations/my');
-        const { data } = extractData<{ reservations: AttendeeReservation[] }>(response.data);
-        setReservations(data.reservations);
+        const response = await API.get<AttendeeReservation[]>('/reservations/me');
+        const reservationsList = response.data;
+
+        if (!Array.isArray(reservationsList)) {
+          throw new Error('Unexpected response format. Expected an array of reservations.');
+        }
+
+        setReservations(reservationsList);
       } catch (err: any) {
         setError(err.response?.data?.message || 'Failed to load your reservations.');
         console.error(err);
@@ -43,9 +47,33 @@ const MyEvents: React.FC = () => {
     fetchMyReservations();
   }, []);
 
+  const handleCancelReservation = async (reservationId: string) => {
+    if (!window.confirm('Are you sure you want to cancel this reservation? This action cannot be undone.')) {
+      return;
+    }
+    setCancellingId(reservationId);
+    try {
+      const response = await API.delete(`/reservations/${reservationId}`);
+      const updatedReservation = response.data.reservation;
+      setReservations(prev =>
+        prev.map(res =>
+          res._id === reservationId
+            ? { ...res, status: updatedReservation.status }
+            : res
+        )
+      );
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to cancel reservation.');
+      console.error(err);
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
   const getStatusPill = (status: AttendeeReservation['status']) => {
     switch (status) {
       case 'confirmed':
+      case 'reserved':
         return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Confirmed</span>;
       case 'pending':
         return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>;
@@ -80,22 +108,28 @@ const MyEvents: React.FC = () => {
         <div className="space-y-6">
           {reservations.map(reservation => (
             <div key={reservation._id} className="p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              {reservation.event ? (
+              {reservation.eventId ? (
                 <>
-                  <div>
-                    <h3 className="font-semibold text-lg text-gray-800">{reservation.event.title}</h3>
+                  <div className="flex-grow">
+                    <h3 className="font-semibold text-lg text-gray-800">{reservation.eventId.title}</h3>
                     <p className="text-gray-600">
-                      {new Date(reservation.event.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                      {new Date(reservation.eventId.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                     </p>
-                    <p className="text-sm text-gray-500">{reservation.event.location}</p>
                     <div className="mt-2 flex items-center gap-4">
-                      <p className="text-sm text-gray-500">Quantity: {reservation.quantity}</p>
+                      <p className="text-sm text-gray-500">Quantity: {reservation.ticketQuantity}</p>
                       {getStatusPill(reservation.status)}
                     </div>
                   </div>
-                  <Link to={`/events/${reservation.event._id}`} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 text-center">
-                    View Event
-                  </Link>
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                    <Link to={`/events/${reservation.eventId._id}`} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 text-center">
+                      View Event
+                    </Link>
+                    {reservation.status !== 'cancelled' && (
+                      <button onClick={() => handleCancelReservation(reservation._id)} disabled={cancellingId === reservation._id} className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-300 disabled:cursor-not-allowed text-center">
+                        {cancellingId === reservation._id ? 'Cancelling...' : 'Cancel'}
+                      </button>
+                    )}
+                  </div>
                 </>
               ) : (
                 <div className="w-full">
