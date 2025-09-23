@@ -1,42 +1,90 @@
-import { useParams } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import React, { useEffect, useState } from 'react';
 import API from '../services/axios';
 import { Event } from '../types/Events';
 import { extractData } from '../services/response';
 import { formatLocation } from '../utils/format';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 const EventDetail: React.FC = () => {
-  const [events, setEvents] = useState<Event[]>([]);
+  const { eventId } = useParams<{ eventId: string }>();
+  const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const { addToCart, isLoading: isCartLoading } = useCart();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [quantity, setQuantity] = useState(1);
+  const [addStatus, setAddStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [statusMessage, setStatusMessage] = useState('');
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchEvent = async () => {
+      if (!eventId) return;
+      setLoading(true);
+      setError(null);
       try {
-        const response = await API.get('/events');
-        const { data } = extractData<Event[] | any>(response.data);
-        const list = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.items)
-            ? data.items
-            : Array.isArray(data?.results)
-              ? data.results
-              : Array.isArray(data?.data)
-                ? data.data
-                : [];
-        setEvents(list);
-      } catch (error) {
-        console.error('Error fetching events:', error);
+        const response = await API.get(`/events/${eventId}`);
+        const { data } = extractData<Event>(response.data);
+        setEvent(data);
+      } catch (err: any) {
+        setError(err.response?.data?.message || 'Error fetching event details.');
+        console.error('Error fetching event:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchEvents();
-  }, []);
+    fetchEvent();
+  }, [eventId]);
 
-  const { eventId } = useParams<{ eventId: string }>();
-  const event = events.find((event) => event._id === String(eventId));
+  const handleAddToCart = async () => {
+    if (!event) return;
+    setAddStatus('idle');
+    setStatusMessage('');
+    try {
+      await addToCart(event._id, quantity);
+      setAddStatus('success');
+      setStatusMessage('Added to cart!');
+      setTimeout(() => setAddStatus('idle'), 3000); // Reset message after 3 seconds
+    } catch (err: any) {
+      setAddStatus('error');
+      setStatusMessage(err.message || 'Could not add to cart. Please try again.');
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (!event) return;
+    try {
+      await addToCart(event._id, quantity);
+      navigate('/cart');
+    } catch (err: any) {
+      setAddStatus('error');
+      setStatusMessage(err.message || 'Could not process purchase. Please try again.');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-24 w-24 border-b-4 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-center p-4">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+          <strong className="font-bold">Error:</strong>
+          <span className="block sm:inline ml-2">{error}</span>
+        </div>
+      </div>
+    );
+  }
 
   if (!event) {
     return (
@@ -57,10 +105,6 @@ const EventDetail: React.FC = () => {
         <Link to="/" className="text-blue-600 hover:text-blue-800 mb-8 inline-block">
           ← Back to Events
         </Link>
-
-        {loading ? (
-        <p>Loading events...</p>
-          ) : (
         
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           {/* Event Image */}
@@ -112,9 +156,46 @@ const EventDetail: React.FC = () => {
                       {event.availableSeats} tickets available
                     </p>
                   </div>
-                  <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium transition-colors duration-300">
-                    Book Now
-                  </button>
+                  {isAuthenticated ? (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <label htmlFor="quantity" className="text-sm font-medium text-gray-700">Quantity</label>
+                        <input
+                          type="number"
+                          id="quantity"
+                          name="quantity"
+                          min="1"
+                          max={event.availableSeats > 0 ? event.availableSeats : 1}
+                          value={quantity}
+                          onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10)))}
+                          disabled={event.availableSeats === 0}
+                          className="w-20 px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <button
+                          onClick={handleAddToCart}
+                          disabled={isCartLoading || event.availableSeats === 0}
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium transition-colors duration-300 disabled:bg-blue-300 disabled:cursor-not-allowed"
+                        >
+                          {isCartLoading && addStatus !== 'error' ? 'Adding...' : event.availableSeats === 0 ? 'Sold Out' : 'Add to Cart'}
+                        </button>
+                        <button
+                          onClick={handleBuyNow}
+                          disabled={isCartLoading || event.availableSeats === 0}
+                          className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-medium transition-colors duration-300 disabled:bg-green-300 disabled:cursor-not-allowed"
+                        >
+                          Buy Now
+                        </button>
+                      </div>
+                      {addStatus === 'success' && <p className="text-green-600 text-sm text-center">{statusMessage}</p>}
+                      {addStatus === 'error' && <p className="text-red-600 text-sm text-center">{statusMessage}</p>}
+                    </>
+                  ) : (
+                    <Link to="/login" state={{ from: location.pathname }} className="w-full block text-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium">
+                      Login to Book Tickets
+                    </Link>
+                  )}
                   <div className="text-center text-sm text-gray-500">
                     <p>Secure checkout</p>
                     <p>Instant confirmation</p>
@@ -123,7 +204,7 @@ const EventDetail: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>)}
+        </div>
       </div>
     </div>
   );

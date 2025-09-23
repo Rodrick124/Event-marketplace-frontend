@@ -61,7 +61,7 @@ const EventList: React.FC = () => {
       return;
     }
     // Example: redirect to event detail or checkout page
-    navigate(`/event/${eventId}`);
+    navigate(`/events/${eventId}`);
   };
 
   const handleAddToList = (eventId: string) => {

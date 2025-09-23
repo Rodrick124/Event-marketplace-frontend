@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { FaShoppingCart } from 'react-icons/fa';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { isAuthenticated, user, logout } = useAuth();
+  const { itemCount } = useCart();
   const navigate = useNavigate();
 
   return (
@@ -55,13 +57,20 @@ const Navbar = () => {
             <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-4">
               {isAuthenticated && user ? (
                 <>
-                  {/* Cart Icon */}
-                  <button
-                    className="relative focus:outline-none mr-2"
-                    onClick={() => navigate('/cart')}
-                  >
-                    <FaShoppingCart className="w-6 h-6 text-blue-600" />
-                  </button>
+                  {/* Cart Icon - only for attendees */}
+                  {user.role === 'attendee' && (
+                    <button
+                      className="relative focus:outline-none"
+                      onClick={() => navigate('/cart')}
+                    >
+                      <FaShoppingCart className="w-6 h-6 text-blue-600" />
+                      {itemCount > 0 && (
+                        <span className="absolute -top-2 -right-3 bg-red-600 text-white text-xs rounded-full h-5 min-w-5 px-1 flex items-center justify-center">
+                          {itemCount > 99 ? '99+' : itemCount}
+                        </span>
+                      )}
+                    </button>
+                  )}
                   {/* Profile Dropdown */}
                   <div className="relative">
                     <button
@@ -179,6 +188,22 @@ const Navbar = () => {
             >
               Contact
             </Link>
+            {/* Cart link in mobile menu - only for attendees */}
+            {isAuthenticated && user.role === 'attendee' && (
+              <Link
+                to="/cart"
+                className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+              >
+                <div className="flex items-center justify-between">
+                  <span>Cart</span>
+                  {itemCount > 0 && (
+                    <span className="bg-red-600 text-white text-xs font-bold rounded-full h-6 min-w-6 px-2 flex items-center justify-center">
+                      {itemCount > 99 ? '99+' : itemCount}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            )}
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">
             <div className="flex flex-col space-y-2 px-4">

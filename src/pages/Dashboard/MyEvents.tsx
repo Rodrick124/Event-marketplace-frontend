@@ -1,44 +1,60 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Event } from '../../types/Events';
-import axios from '../../services/axios';
+import API from '../../services/axios';
 import { extractData } from '../../services/response';
-import { formatLocation } from '../../utils/format';
 
-const MyEvents = () => {
-  const [registeredEvents, setRegisteredEvents] = useState<Event[]>([]);
+// Based on OrganizerReservation and what an attendee might need
+interface AttendeeReservation {
+  _id: string;
+  event: {
+    _id: string;
+    title: string;
+    date: string;
+    location: string; // Assuming simple string for now
+  } | null;
+  quantity: number;
+  totalPrice: number;
+  status: 'confirmed' | 'pending' | 'cancelled';
+  createdAt: string;
+}
+
+const MyEvents: React.FC = () => {
+  const [reservations, setReservations] = useState<AttendeeReservation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
 
   useEffect(() => {
-    const fetchRegisteredEvents = async () => {
+    const fetchMyReservations = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
-        const response = await axios.get('/dashboard/attendee/events');
-        const { data: reservations } = extractData<any[]>(response.data);
-
-        if (Array.isArray(reservations)) {
-          const events = reservations
-            .filter(reservation => reservation.eventId) // Ensure event data exists
-            .map(reservation => {
-              const eventData = reservation.eventId;
-              // Map API response to the Event type used by the component
-              return { ...eventData, image: eventData.imageUrl };
-            });
-          setRegisteredEvents(events);
-        } else {
-          setRegisteredEvents([]);
-        }
-        setError(null);
+        // Assuming an endpoint to get reservations for the logged-in attendee
+        const response = await API.get('/reservations/my');
+        const { data } = extractData<{ reservations: AttendeeReservation[] }>(response.data);
+        setReservations(data.reservations);
       } catch (err: any) {
-        setError('Failed to fetch your registered events. Please try again later.');
+        setError(err.response?.data?.message || 'Failed to load your reservations.');
+        console.error(err);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchRegisteredEvents();
+    fetchMyReservations();
   }, []);
+
+  const getStatusPill = (status: AttendeeReservation['status']) => {
+    switch (status) {
+      case 'confirmed':
+        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Confirmed</span>;
+      case 'pending':
+        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>;
+      case 'cancelled':
+        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Cancelled</span>;
+      default:
+        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">Unknown</span>;
+    }
+  };
 
   if (isLoading) {
     return (
@@ -50,67 +66,55 @@ const MyEvents = () => {
 
   if (error) {
     return (
-      <div className="text-center p-4">
-        <p className="text-red-600">{error}</p>
-      </div>
-    );
-  }
-
-  if (registeredEvents.length === 0) {
-    return (
-      <div className="text-center p-8">
-        <h2 className="text-2xl font-semibold mb-4">My Events</h2>
-        <p className="text-gray-600">You haven't registered for any events yet.</p>
+      <div className="text-center p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+        <p className="font-bold">Error</p>
+        <p>{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4">
-      <h2 className="text-2xl font-semibold mb-6">My Events</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {registeredEvents.map((event) => (
-          <div
-            key={event._id}
-            className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
-          >
-            <div className="aspect-w-16 aspect-h-9">
-              <img
-                src={event.image || '/assets/default-event.jpg'}
-                alt={event.title}
-                className="object-cover w-full h-48"
-              />
+    <div className="bg-white p-6 sm:p-8 rounded-lg shadow-md max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">My Events & Tickets</h1>
+      {reservations.length > 0 ? (
+        <div className="space-y-6">
+          {reservations.map(reservation => (
+            <div key={reservation._id} className="p-4 border rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              {reservation.event ? (
+                <>
+                  <div>
+                    <h3 className="font-semibold text-lg text-gray-800">{reservation.event.title}</h3>
+                    <p className="text-gray-600">
+                      {new Date(reservation.event.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
+                    <p className="text-sm text-gray-500">{reservation.event.location}</p>
+                    <div className="mt-2 flex items-center gap-4">
+                      <p className="text-sm text-gray-500">Quantity: {reservation.quantity}</p>
+                      {getStatusPill(reservation.status)}
+                    </div>
+                  </div>
+                  <Link to={`/events/${reservation.event._id}`} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 text-center">
+                    View Event
+                  </Link>
+                </>
+              ) : (
+                <div className="w-full">
+                  <h3 className="font-semibold text-lg text-gray-500 italic">Event has been removed</h3>
+                  <p className="text-sm text-gray-400">Reservation made on {new Date(reservation.createdAt).toLocaleDateString()}</p>
+                  {getStatusPill(reservation.status)}
+                </div>
+              )}
             </div>
-            <div className="p-4">
-              <h3 className="text-lg font-semibold mb-2">{event.title}</h3>
-              <div className="space-y-2">
-                <p className="text-sm text-gray-600">
-                  <span className="font-medium">Date:</span>{' '}
-                  {new Date(event.date).toLocaleDateString()}
-                </p>
-                <p className="text-sm text-gray-600">
-                  <span className="font-medium">Time:</span> {event.time}
-                </p>
-                <p className="text-sm text-gray-600">
-                  <span className="font-medium">Location:</span> {formatLocation(event.location)}
-                </p>
-                <p className="text-sm text-gray-600">
-                  <span className="font-medium">Category:</span> {event.category}
-                </p>
-              </div>
-              <div className="mt-4 flex justify-between items-center">
-                <span className="text-blue-600 font-medium">${event.price}</span>
-                <Link
-                  to={`/event/${event._id}`}
-                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-300"
-                >
-                  View Details
-                </Link>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <p className="text-gray-500">You have no event reservations.</p>
+          <Link to="/events" className="mt-4 inline-block px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+            Explore Events
+          </Link>
+        </div>
+      )}
     </div>
   );
 };
