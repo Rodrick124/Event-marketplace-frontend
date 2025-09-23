@@ -17,6 +17,8 @@ import OrganizerDashboard from './pages/Organizer/Dashboard'
 import AdminDashboard from './pages/Admin/Dashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 import CartPage from './pages/CartPage';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   return (
@@ -35,6 +37,8 @@ function App() {
           <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<SignupForm />} />
           <Route path="/about" element={<About />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="*" element={<NotFound />} />
