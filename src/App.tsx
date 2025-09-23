@@ -17,6 +17,7 @@ import OrganizerDashboard from './pages/Organizer/Dashboard'
 import AdminDashboard from './pages/Admin/Dashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 
@@ -45,6 +46,11 @@ function App() {
           <Route path="/events/:eventId" element={<EventDetail/>} />
           <Route path="/reserve" element={<ReservationForm />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/checkout/:reservationId" element={
+            <ProtectedRoute allowedRoles={['attendee']}>
+              <CheckoutPage />
+            </ProtectedRoute>
+          } />
           <Route path="/dashboard/*" element={
             <ProtectedRoute allowedRoles={['attendee']}>
               <Dashboard />

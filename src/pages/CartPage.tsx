@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaTrash, FaPlus, FaMinus } from 'react-icons/fa';
+import API from '../services/axios';
 
 const CartPage: React.FC = () => {
   const { cart, isLoading, error, updateQuantity, removeFromCart, clearCart } = useCart();
   const navigate = useNavigate();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   // Wrap cart operations in try/catch to prevent unhandled promise rejections.
   // The error is already set in the context, so we just need to catch it here.
@@ -35,11 +38,28 @@ const CartPage: React.FC = () => {
     }
   };
 
-  const handleCheckout = () => {
-    // This would navigate to the checkout flow
-    // For now, we can just show an alert
-    alert('Proceeding to checkout!');
-    // navigate('/checkout');
+  const handleCheckout = async () => {
+    if (!cart || cart.items.length === 0) return;
+    setIsCheckingOut(true);
+    setCheckoutError(null);
+    try {
+      // Create reservations for all items in the cart
+      const reservationPromises = cart.items.map(item =>
+        API.post('/reservations', {
+          eventId: item.eventId._id,
+          ticketQuantity: item.quantity,
+        })
+      );
+      await Promise.all(reservationPromises);
+
+      // If all reservations are successful, clear the cart and navigate
+      await clearCart();
+      navigate('/dashboard/my-events');
+    } catch (err: any) {
+      setCheckoutError(err.response?.data?.message || 'An error occurred during checkout. Some items may not have been reserved.');
+    } finally {
+      setIsCheckingOut(false);
+    }
   };
 
   const subtotal = cart?.items.reduce((sum, item) => sum + item.eventId.price * item.quantity, 0) || 0;
@@ -129,12 +149,17 @@ const CartPage: React.FC = () => {
                 <p>Calculated at checkout</p>
               </div>
             </div>
+          {checkoutError && (
+            <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {checkoutError}
+            </div>
+          )}
             <div className="flex justify-between font-bold text-lg">
               <p>Total</p>
               <p>${subtotal.toFixed(2)}</p>
             </div>
-            <button onClick={handleCheckout} className="w-full mt-6 bg-green-600 text-white py-3 rounded-md font-semibold hover:bg-green-700 transition-colors disabled:bg-green-300" disabled={isLoading}>
-              Proceed to Checkout
+          <button onClick={handleCheckout} className="w-full mt-6 bg-green-600 text-white py-3 rounded-md font-semibold hover:bg-green-700 transition-colors disabled:bg-green-300" disabled={isLoading || isCheckingOut}>
+            {isCheckingOut ? 'Processing...' : 'Proceed to Checkout'}
             </button>
           </div>
         </div>

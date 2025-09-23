@@ -4,6 +4,7 @@ import { Route, Routes, useNavigate, Link } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
 import Profile from './Profile';
 import MyEvents from './MyEvents';
+import MyPayments from './MyPayments';
 import Settings from './Settings';
 import API from '../../services/axios';
 
@@ -49,6 +50,7 @@ const Dashboard = () => {
             <Route index element={<DashboardHome user={user} />} />
             <Route path="profile" element={<Profile />} />
             <Route path="my-events" element={<MyEvents />} />
+            <Route path="payments" element={<MyPayments />} />
             <Route path="settings" element={<Settings />} />
           </Routes>
         </main>

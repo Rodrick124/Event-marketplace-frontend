@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { FaUser, FaCalendar, FaCog, FaHome } from 'react-icons/fa';
+import { FaUser, FaCalendar, FaCog, FaHome, FaCreditCard } from 'react-icons/fa';
 
 const DashboardSidebar = () => {
   const location = useLocation();
@@ -8,6 +8,7 @@ const DashboardSidebar = () => {
     { path: '/dashboard', label: 'Dashboard', icon: FaHome },
     { path: '/dashboard/profile', label: 'Profile', icon: FaUser },
     { path: '/dashboard/my-events', label: 'My Events', icon: FaCalendar },
+    { path: '/dashboard/payments', label: 'Payments', icon: FaCreditCard },
     { path: '/dashboard/settings', label: 'Settings', icon: FaCog },
   ];
 

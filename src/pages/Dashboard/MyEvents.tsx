@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../../services/axios';
 
-// Based on GET /api/reservations/me
-interface AttendeeReservation {
+export interface AttendeeReservation {
   _id: string;
   eventId: {
     _id: string;
@@ -12,7 +11,7 @@ interface AttendeeReservation {
   } | null;
   ticketQuantity: number;
   totalPrice: number;
-  status: 'confirmed' | 'pending' | 'cancelled' | 'reserved';
+  status: 'confirmed' | 'pending' | 'cancelled' | 'reserved' | 'completed';
   createdAt: string;
 }
 
@@ -120,11 +119,16 @@ const MyEvents: React.FC = () => {
                       {getStatusPill(reservation.status)}
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-                    <Link to={`/events/${reservation.eventId._id}`} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 text-center">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+                    <Link to={`/events/${reservation.eventId._id}`} className="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 text-center">
                       View Event
                     </Link>
-                    {reservation.status !== 'cancelled' && (
+                    {reservation.status === 'reserved' && reservation.totalPrice > 0 && (
+                      <Link to={`/checkout/${reservation._id}`} state={{ reservation }} className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 text-center">
+                        Pay Now
+                      </Link>
+                    )}
+                    {reservation.status !== 'cancelled' && reservation.status !== 'completed' && reservation.status !== 'confirmed' && (
                       <button onClick={() => handleCancelReservation(reservation._id)} disabled={cancellingId === reservation._id} className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-300 disabled:cursor-not-allowed text-center">
                         {cancellingId === reservation._id ? 'Cancelling...' : 'Cancel'}
                       </button>
