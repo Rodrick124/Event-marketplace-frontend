@@ -149,7 +149,7 @@ const MyPayments: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap">{getStatusPill(payment.status)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500 font-mono">{payment._id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link to={`/receipt/${payment._id}`} state={{ payment }} className="text-blue-600 hover:text-blue-900">
+                    <Link to={`/receipt/${payment._id}`} className="text-blue-600 hover:text-blue-900">
                       View Receipt
                     </Link>
                   </td>

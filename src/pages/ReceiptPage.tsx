@@ -1,23 +1,57 @@
-import React, { useEffect } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Payment } from './Dashboard/MyPayments';
+import API from '../services/axios';
 
 const ReceiptPage: React.FC = () => {
-  const location = useLocation();
+  const { paymentId } = useParams<{ paymentId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const payment: Payment | undefined = location.state?.payment;
+  const [payment, setPayment] = useState<Payment | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!payment) {
-      // Redirect if the page is accessed directly without state
-      navigate('/dashboard/payments');
-    }
-  }, [payment, navigate]);
+    const fetchPayment = async () => {
+      if (!paymentId) {
+        setError('No payment ID provided.');
+        setIsLoading(false);
+        return;
+      }
+      try {
+        // Assuming an endpoint like GET /api/payments/:id exists and is secure
+        const response = await API.get(`/payments/${paymentId}`);
+        setPayment(response.data);
+      } catch (err: any) {
+        setError(err.response?.data?.message || 'Failed to load receipt details.');
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  if (!payment) {
-    return null; // Or a loading/error state
+    fetchPayment();
+  }, [paymentId]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error || !payment) {
+    return (
+      <div className="container mx-auto my-12 text-center p-4">
+        <h1 className="text-2xl font-bold text-red-600">Error</h1>
+        <p className="text-gray-600 mt-2">{error || 'Could not load receipt details.'}</p>
+        <Link to="/dashboard/payments" className="mt-4 inline-block px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+          Go to My Payments
+        </Link>
+      </div>
+    );
   }
 
   const handlePrint = () => {

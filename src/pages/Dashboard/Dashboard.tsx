@@ -10,9 +10,9 @@ import API from '../../services/axios';
 
 interface ReservationInfo {
   _id: string;
-  eventId: { // This can be null if the event was deleted
+  eventId: {
     _id: string;
-    name: string;
+    title: string; // Aligning with other interfaces like AttendeeReservation
   } | null;
 }
 
@@ -137,7 +137,7 @@ const DashboardHome = ({ user }: { user: User }) => {
                   // Add a check to ensure eventId is not null to prevent crashes
                   reservation.eventId && (
                     <li key={reservation._id} className="px-6 py-4 flex justify-between items-center">
-                      <span className="font-medium text-gray-800">{reservation.eventId.name}</span>
+                      <span className="font-medium text-gray-800">{reservation.eventId.title}</span>
                       <Link to={`/event/${reservation.eventId._id}`} className="text-sm text-blue-600 hover:text-blue-800 font-semibold">
                         View Details
                       </Link>
@@ -161,7 +161,7 @@ const DashboardHome = ({ user }: { user: User }) => {
                   // Add a check to ensure eventId is not null to prevent crashes
                   reservation.eventId && (
                     <li key={reservation._id} className="px-6 py-4 flex justify-between items-center">
-                      <span className="font-medium text-gray-800">{reservation.eventId.name}</span>
+                      <span className="font-medium text-gray-800">{reservation.eventId.title}</span>
                       <Link to={`/event/${reservation.eventId._id}`} className="text-sm text-blue-600 hover:text-blue-800 font-semibold">
                         View Details
                       </Link>
