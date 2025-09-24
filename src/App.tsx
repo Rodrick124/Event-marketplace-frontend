@@ -19,6 +19,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import ForgotPassword from './pages/ForgotPassword';
+import ReceiptPage from './pages/ReceiptPage';
 import ResetPassword from './pages/ResetPassword';
 
 function App() {
@@ -46,6 +47,11 @@ function App() {
           <Route path="/events/:eventId" element={<EventDetail/>} />
           <Route path="/reserve" element={<ReservationForm />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/receipt/:paymentId" element={
+            <ProtectedRoute allowedRoles={['attendee']}>
+              <ReceiptPage />
+            </ProtectedRoute>
+          } />
           <Route path="/checkout/:reservationId" element={
             <ProtectedRoute allowedRoles={['attendee']}>
               <CheckoutPage />

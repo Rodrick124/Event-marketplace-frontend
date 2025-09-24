@@ -1,0 +1,20 @@
+/* print.css */
+@media print {
+  /* Hide everything by default when printing */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Make the printable content and its children visible */
+  .printable-content, .printable-content * {
+    visibility: visible;
+  }
+
+  /* Position the printable content at the top of the page */
+  .printable-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}

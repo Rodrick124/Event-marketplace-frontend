@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import API from '../../services/axios';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import ConfirmationModal from '../../components/ConfirmationModal'; // This path is correct
+import { convertOklchToRgb } from '../../utils/pdf';
 import Ticket from '../../components/Ticket';
 
 export interface AttendeeReservation {
@@ -23,6 +25,7 @@ const MyEvents: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [reservationToCancel, setReservationToCancel] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -50,11 +53,13 @@ const MyEvents: React.FC = () => {
     fetchMyReservations();
   }, []);
 
-  const handleCancelReservation = async (reservationId: string) => {
-    if (!window.confirm('Are you sure you want to cancel this reservation? This action cannot be undone.')) {
+  const confirmCancellation = async () => {
+    if (!reservationToCancel) {
       return;
     }
-    setCancellingId(reservationId);
+    const reservationId = reservationToCancel;
+    setCancellingId(reservationId); // For button disabled state
+    setReservationToCancel(null); // Close modal
     try {
       const response = await API.delete(`/reservations/${reservationId}`);
       const updatedReservation = response.data.reservation;
@@ -73,6 +78,10 @@ const MyEvents: React.FC = () => {
     }
   };
 
+  const openCancelModal = (reservationId: string) => {
+    setReservationToCancel(reservationId);
+  };
+
   const handleDownloadTicket = async (reservation: AttendeeReservation) => {
     setDownloadingId(reservation._id);
     const ticketElement = document.getElementById(`ticket-${reservation._id}`);
@@ -82,6 +91,7 @@ const MyEvents: React.FC = () => {
       return;
     }
 
+    const revertStyles = convertOklchToRgb(ticketElement);
     try {
       const canvas = await html2canvas(ticketElement, { scale: 2 });
       const imgData = canvas.toDataURL('image/png');
@@ -97,6 +107,7 @@ const MyEvents: React.FC = () => {
     } catch (err) {
       console.error('Failed to generate PDF:', err);
     } finally {
+      revertStyles();
       setDownloadingId(null);
     }
   };
@@ -140,6 +151,17 @@ const MyEvents: React.FC = () => {
           <Ticket key={res._id} reservation={res} />
         ))}
       </div>
+      <ConfirmationModal
+        isOpen={!!reservationToCancel}
+        onClose={() => setReservationToCancel(null)}
+        onConfirm={confirmCancellation}
+        title="Cancel Reservation"
+        message="Are you sure you want to cancel this reservation? This action cannot be undone."
+        confirmText="Yes, Cancel"
+        cancelText="No, Keep It"
+        isConfirming={!!cancellingId}
+      />
+
     <div className="bg-white p-6 sm:p-8 rounded-lg shadow-md max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">My Events & Tickets</h1>
       {reservations.length > 0 ? (
@@ -158,8 +180,8 @@ const MyEvents: React.FC = () => {
                       {getStatusPill(reservation.status)}
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-                    <Link to={`/events/${reservation.eventId._id}`} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 text-center">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+                    <Link to={`/events/${reservation.eventId._id}`} className="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 text-center">
                       View Event
                     </Link>
                     {reservation.status === 'reserved' && reservation.totalPrice > 0 && (
@@ -172,8 +194,8 @@ const MyEvents: React.FC = () => {
                         {downloadingId === reservation._id ? 'Downloading...' : 'Download Ticket'}
                       </button>
                     )}
-                    {reservation.status !== 'cancelled' && reservation.status !== 'completed' && reservation.status !== 'confirmed' && reservation.status !== 'reserved' && (
-                      <button onClick={() => handleCancelReservation(reservation._id)} disabled={cancellingId === reservation._id} className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-300 disabled:cursor-not-allowed text-center">
+                    {reservation.status !== 'cancelled' && reservation.status !== 'completed' && reservation.status !== 'confirmed' && (
+                      <button onClick={() => openCancelModal(reservation._id)} disabled={cancellingId === reservation._id} className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-300 disabled:cursor-not-allowed text-center">
                         {cancellingId === reservation._id ? 'Cancelling...' : 'Cancel'}
                       </button>
                     )}

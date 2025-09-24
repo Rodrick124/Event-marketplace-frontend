@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import './print.css' // Import print-specific styles
 import App from './App'
 import { BrowserRouter as Router } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
@@ -17,7 +18,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Router>
       <AuthProvider>
-        <PayPalScriptProvider options={initialPayPalOptions}>
+        <PayPalScriptProvider options={{ clientId: initialPayPalOptions['client-id'], currency: initialPayPalOptions.currency, intent: initialPayPalOptions.intent }}>
           <CartProvider>
             <App />
           </CartProvider>
