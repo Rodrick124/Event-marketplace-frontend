@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../../services/axios';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import Ticket from '../../components/Ticket';
 
 export interface AttendeeReservation {
   _id: string;
@@ -10,7 +13,7 @@ export interface AttendeeReservation {
     date: string;
   } | null;
   ticketQuantity: number;
-  totalPrice: number;
+  totalPrice: number; // This is used by CheckoutPage, so we keep it.
   status: 'confirmed' | 'pending' | 'cancelled' | 'reserved' | 'completed';
   createdAt: string;
 }
@@ -20,6 +23,7 @@ const MyEvents: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMyReservations = async () => {
@@ -69,6 +73,34 @@ const MyEvents: React.FC = () => {
     }
   };
 
+  const handleDownloadTicket = async (reservation: AttendeeReservation) => {
+    setDownloadingId(reservation._id);
+    const ticketElement = document.getElementById(`ticket-${reservation._id}`);
+    if (!ticketElement) {
+      console.error('Ticket element not found!');
+      setDownloadingId(null);
+      return;
+    }
+
+    try {
+      const canvas = await html2canvas(ticketElement, { scale: 2 });
+      const imgData = canvas.toDataURL('image/png');
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`ticket-${reservation.eventId?.title.replace(/ /g, '_')}-${reservation._id}.pdf`);
+    } catch (err) {
+      console.error('Failed to generate PDF:', err);
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
   const getStatusPill = (status: AttendeeReservation['status']) => {
     switch (status) {
       case 'confirmed':
@@ -101,6 +133,13 @@ const MyEvents: React.FC = () => {
   }
 
   return (
+    <>
+      {/* Hidden container for rendering tickets for PDF generation */}
+      <div style={{ position: 'absolute', left: '-9999px', top: 'auto' }}>
+        {reservations.map(res => (
+          <Ticket key={res._id} reservation={res} />
+        ))}
+      </div>
     <div className="bg-white p-6 sm:p-8 rounded-lg shadow-md max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">My Events & Tickets</h1>
       {reservations.length > 0 ? (
@@ -119,8 +158,8 @@ const MyEvents: React.FC = () => {
                       {getStatusPill(reservation.status)}
                     </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-                    <Link to={`/events/${reservation.eventId._id}`} className="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 text-center">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                    <Link to={`/events/${reservation.eventId._id}`} className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 text-center">
                       View Event
                     </Link>
                     {reservation.status === 'reserved' && reservation.totalPrice > 0 && (
@@ -128,7 +167,12 @@ const MyEvents: React.FC = () => {
                         Pay Now
                       </Link>
                     )}
-                    {reservation.status !== 'cancelled' && reservation.status !== 'completed' && reservation.status !== 'confirmed' && (
+                    {(reservation.status === 'confirmed' || reservation.status === 'completed') && (
+                      <button onClick={() => handleDownloadTicket(reservation)} disabled={downloadingId === reservation._id} className="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-purple-300 text-center">
+                        {downloadingId === reservation._id ? 'Downloading...' : 'Download Ticket'}
+                      </button>
+                    )}
+                    {reservation.status !== 'cancelled' && reservation.status !== 'completed' && reservation.status !== 'confirmed' && reservation.status !== 'reserved' && (
                       <button onClick={() => handleCancelReservation(reservation._id)} disabled={cancellingId === reservation._id} className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-red-300 disabled:cursor-not-allowed text-center">
                         {cancellingId === reservation._id ? 'Cancelling...' : 'Cancel'}
                       </button>
@@ -154,6 +198,7 @@ const MyEvents: React.FC = () => {
         </div>
       )}
     </div>
+    </>
   );
 };
 
