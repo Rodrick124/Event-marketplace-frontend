@@ -1,5 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Hero from './components/Hero'
 import About from './pages/About'
 import Contact from './pages/Contact'
@@ -26,6 +28,7 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
       <main className="flex-grow">
         <Routes>
           <Route path="/" element={

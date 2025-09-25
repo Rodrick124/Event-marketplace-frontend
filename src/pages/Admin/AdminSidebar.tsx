@@ -7,7 +7,8 @@ import {
   FaChartBar, 
   FaHistory, 
   FaCog,
-  FaShieldAlt
+  FaShieldAlt,
+  FaEnvelope
 } from 'react-icons/fa';
 
 const AdminSidebar = () => {
@@ -20,6 +21,7 @@ const AdminSidebar = () => {
     { path: '/admin/reservations', label: 'Reservations', icon: FaClipboardList },
     { path: '/admin/analytics', label: 'Analytics', icon: FaChartBar },
     { path: '/admin/activity-logs', label: 'Activity Logs', icon: FaHistory },
+    { path: '/admin/contact-messages', label: 'Contact Messages', icon: FaEnvelope },
     { path: '/admin/settings', label: 'Settings', icon: FaCog },
   ];
 

@@ -9,6 +9,7 @@ import ReservationManagement from './ReservationManagement';
 import Analytics from './Analytics';
 import ActivityLogs from './ActivityLogs';
 import Settings from './Settings';
+import ContactMessages from './ContactMessages';
 
 const AdminDashboard = () => {
   const { user, isAuthenticated } = useAuth();
@@ -47,6 +48,7 @@ const AdminDashboard = () => {
             <Route path="analytics" element={<Analytics />} />
             <Route path="activity-logs" element={<ActivityLogs />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="contact-messages" element={<ContactMessages />} />
           </Routes>
         </main>
       </div>
