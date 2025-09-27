@@ -39,7 +39,7 @@ const EventList: React.FC = () => {
     fetchEvents();
   }, []);
 
-  const handleFilterChange = (filters: { location: string; category: string }) => {
+  const handleFilterChange = (filters: { location: string; category: string; sortBy: string }) => {
     let filtered = events;
     if (filters.location) {
       filtered = filtered.filter(e =>
@@ -49,6 +49,17 @@ const EventList: React.FC = () => {
     if (filters.category) {
       filtered = filtered.filter(e => e.category.toLowerCase().includes(filters.category.toLowerCase()));
     }
+
+    // Sort events
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      if (filters.sortBy === 'date-asc') {
+        return dateA - dateB;
+      }
+      return dateB - dateA;
+    });
+
     setFilteredEvents(filtered);
   };
 

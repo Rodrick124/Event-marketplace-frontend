@@ -116,6 +116,8 @@ const EventDetail: React.FC = () => {
     );
   }
 
+  const isEventPast = new Date(event.date) < new Date();
+
   return (
     <div className="min-h-screen bg-gray-100 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -185,26 +187,32 @@ const EventDetail: React.FC = () => {
                           max={event.availableSeats > 0 ? event.availableSeats : 1}
                           value={quantity}
                           onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10)))}
-                          disabled={event.availableSeats === 0}
+                          disabled={event.availableSeats === 0 || isEventPast}
                           className="w-20 px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <button
-                          onClick={handleAddToCart}
-                          disabled={isCartLoading || isProcessingPurchase || event.availableSeats === 0}
-                          className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium transition-colors duration-300 disabled:bg-blue-300 disabled:cursor-not-allowed"
-                        >
-                          {isCartLoading ? 'Adding...' : event.availableSeats === 0 ? 'Sold Out' : 'Add to Cart'}
-                        </button>
-                        <button
-                          onClick={handleBuyNow}
-                          disabled={isCartLoading || isProcessingPurchase || event.availableSeats === 0}
-                          className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-medium transition-colors duration-300 disabled:bg-green-300 disabled:cursor-not-allowed"
-                        >
-                          {isProcessingPurchase ? 'Reserving...' : 'Buy Now'}
-                        </button>
-                      </div>
+                      {isEventPast ? (
+                        <div className="text-center bg-gray-200 text-gray-600 p-3 rounded-md font-medium">
+                          This event has ended.
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <button
+                            onClick={handleAddToCart}
+                            disabled={isCartLoading || isProcessingPurchase || event.availableSeats === 0}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md font-medium transition-colors duration-300 disabled:bg-blue-300 disabled:cursor-not-allowed"
+                          >
+                            {isCartLoading ? 'Adding...' : event.availableSeats === 0 ? 'Sold Out' : 'Add to Cart'}
+                          </button>
+                          <button
+                            onClick={handleBuyNow}
+                            disabled={isCartLoading || isProcessingPurchase || event.availableSeats === 0}
+                            className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md font-medium transition-colors duration-300 disabled:bg-green-300 disabled:cursor-not-allowed"
+                          >
+                            {isProcessingPurchase ? 'Reserving...' : 'Buy Now'}
+                          </button>
+                        </div>
+                      )}
                       {addStatus === 'success' && <p className="text-green-600 text-sm text-center">{statusMessage}</p>}
                       {addStatus === 'error' && <p className="text-red-600 text-sm text-center">{statusMessage}</p>}
                     </>
