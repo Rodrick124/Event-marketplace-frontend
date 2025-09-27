@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { OrganizerApiService } from '../../services/organizerApi';
 import { OrganizerEvent } from '../../types/Organizer';
-import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaPlus, FaTimesCircle } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import ConfirmationModal from '../../components/ConfirmationModal';
 
 const MyEvents: React.FC = () => {
   const [events, setEvents] = useState<OrganizerEvent[]>([]);
@@ -10,6 +12,14 @@ const MyEvents: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    isConfirming: boolean;
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {}, isConfirming: false });
+  const navigate = useNavigate();
 
   const fetchEvents = useCallback(async (page: number) => {
     setIsLoading(true);
@@ -29,16 +39,51 @@ const MyEvents: React.FC = () => {
     fetchEvents(currentPage);
   }, [fetchEvents, currentPage]);
 
-  const handleDelete = async (eventId: string) => {
-    if (window.confirm('Are you sure you want to delete this event?')) {
-      try {
-        await OrganizerApiService.deleteEvent(eventId);
-        // Refetch events after deletion
-        fetchEvents(currentPage);
-      } catch (err: any) {
-        alert('Failed to delete event: ' + err.message);
-      }
+  const handleConfirmAction = async (action: () => Promise<void>) => {
+    setModalState(prev => ({ ...prev, isConfirming: true }));
+    try {
+      await action();
+    } finally {
+      setModalState({ isOpen: false, title: '', message: '', onConfirm: () => {}, isConfirming: false });
     }
+  };
+
+  const openConfirmationModal = (
+    actionType: 'delete' | 'cancel',
+    eventId: string,
+    eventTitle: string
+  ) => {
+    const onConfirm = () => {
+      if (actionType === 'delete') {
+        handleConfirmAction(async () => {
+          try {
+            await OrganizerApiService.deleteEvent(eventId);
+            toast.success('Event deleted successfully.');
+            fetchEvents(currentPage);
+          } catch (err: any) {
+            toast.error(err.message || 'Failed to delete event.');
+          }
+        });
+      } else {
+        handleConfirmAction(async () => {
+          try {
+            await OrganizerApiService.cancelEvent(eventId);
+            toast.success('Event cancelled successfully.');
+            fetchEvents(currentPage);
+          } catch (err: any) {
+            toast.error(err.message || 'Failed to cancel event.');
+          }
+        });
+      }
+    };
+
+    setModalState({
+      isOpen: true,
+      title: `Confirm ${actionType === 'delete' ? 'Deletion' : 'Cancellation'}`,
+      message: `Are you sure you want to ${actionType} the event "${eventTitle}"? This action cannot be undone.`,
+      onConfirm,
+      isConfirming: false,
+    });
   };
 
   const handlePageChange = (newPage: number) => {
@@ -102,10 +147,22 @@ const MyEvents: React.FC = () => {
                     {event.totalReservations ?? 0} / {event.capacity}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link to={`../edit-event/${event._id}`} className="text-blue-600 hover:text-blue-900 mr-4">
+                    <button onClick={() => navigate(`../edit-event/${event._id}`)} className="text-blue-600 hover:text-blue-900 mr-4" title="Edit">
                       <FaEdit />
-                    </Link>
-                    <button onClick={() => handleDelete(event._id)} className="text-red-600 hover:text-red-900">
+                    </button>
+                    <button
+                      onClick={() => openConfirmationModal('cancel', event._id, event.title)}
+                      className="text-yellow-600 hover:text-yellow-900 mr-4 disabled:text-gray-400"
+                      title="Cancel Event"
+                      disabled={event.status === 'cancelled' || event.status === 'rejected'}
+                    >
+                      <FaTimesCircle />
+                    </button>
+                    <button 
+                      onClick={() => openConfirmationModal('delete', event._id, event.title)} 
+                      className="text-red-600 hover:text-red-900"
+                      title="Delete"
+                    >
                       <FaTrash />
                     </button>
                   </td>
@@ -145,6 +202,16 @@ const MyEvents: React.FC = () => {
           </div>
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={modalState.onConfirm}
+        title={modalState.title}
+        message={modalState.message}
+        isConfirming={modalState.isConfirming}
+        confirmText={modalState.title.split(' ')[1]}
+      />
     </div>
   );
 };

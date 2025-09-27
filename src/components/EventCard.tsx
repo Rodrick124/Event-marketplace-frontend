@@ -1,77 +1,43 @@
-import React, { useEffect, useState } from 'react';
-import API from '../services/axios';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { Event } from '../types/Events';
-import { extractData } from '../services/response';
 
-const EventCard: React.FC = () => {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await API.get('/events');
-        const { data } = extractData<Event[] | any>(response.data);
-        const list = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.items)
-            ? data.items
-            : Array.isArray(data?.results)
-              ? data.results
-              : Array.isArray(data?.data)
-                ? data.data
-                : [];
-        setEvents(list);
-      } catch (error) {
-        console.error('Error fetching events:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEvents();
-  }, []);
-
-  if (!events || !Array.isArray(events)) {
-    return <p>No events available.</p>;
-  }
-
+interface EventCardProps {
+  event: Event;
+}
+const EventCard: React.FC<EventCardProps> = ({ event }) => {
+  const { _id, title, description, price, availableSeats, imageUrl } = event;
 
   return (
-    <>
-      {loading ? (
-        <p>Loading events...</p>
-      )  : ( 
     <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-      {events.map((event) => (
-          <><div className="relative h-48">
+      <Link to={`/events/${_id}`}>
+        <div className="relative h-48">
           <img
             className="w-full h-full object-cover"
-            src={event.image}
-            alt={event.title} />
-        </div><div className="p-6">
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">{event.title}</h3>
-            <p className="text-gray-600 mb-4 line-clamp-2">{event.description}</p>
+            src={imageUrl || '/default-event.jpg'} // Use imageUrl and provide a fallback
+            alt={title}
+            onError={(e) => {
+              e.currentTarget.src = '/default-event.jpg';
+            }}
+          />
+        </div>
+      </Link>
+      <div className="p-6">
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">{title}</h3>
+        <p className="text-gray-600 mb-4 line-clamp-2">{description}</p>
 
-            {/* Price and Tickets */}
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-2xl font-bold text-blue-600">XFA{event.price}</p>
-                <p className="text-sm text-gray-500">
-                  {event.availableSeats} tickets left
-                </p>
-              </div>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors duration-300">
-                Book Now
-              </button>
-            </div>
-          </div></>
-      ))}
-      
+        {/* Price and Tickets */}
+        <div className="flex justify-between items-center">
+          <div>
+            <p className="text-2xl font-bold text-blue-600">${price}</p>
+            <p className="text-sm text-gray-500">{availableSeats} tickets left</p>
+          </div>
+          <Link to={`/events/${_id}`} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors duration-300">
+            Book Now
+          </Link>
+        </div>
+      </div>
     </div>
-  )}
-    </>
-    
   );
 };
 

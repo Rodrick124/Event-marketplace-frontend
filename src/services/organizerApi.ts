@@ -210,42 +210,36 @@ export class OrganizerApiService {
   }
 
   /**
-   * Update an existing event.
+   * Updates an event. This will set its status to 'pending' for admin review.
    * @param eventId - The ID of the event to update.
    * @param eventData - The data to update.
+   * @param imageFile - An optional new image file for the event.
    */
   static async updateEvent(eventId: string, eventData: UpdateEventPayload, imageFile?: File | null): Promise<OrganizerEvent> {
     try {
       const payload = new FormData();
 
-      // Append text fields to FormData
-      for (const key in eventData) {
-        if (Object.prototype.hasOwnProperty.call(eventData, key)) {
-          const value = (eventData as any)[key];
-          // Exclude fields that should not be sent or are handled differently
-          if (key !== '_id' && key !== 'organizer' && key !== 'createdAt' && key !== 'updatedAt' && key !== 'imageUrl' && key !== '__v' && value !== null && value !== undefined) {
-            if (key === 'location' && typeof value === 'object' && value !== null) {
-              // Handle nested location object for FormData
-              payload.append('location[address]', value.address || '');
-              payload.append('location[city]', value.city || '');
-              payload.append('location[country]', value.country || '');
-            } else if (key === 'date' && typeof value === 'string' && value) {
-              const dateObj = new Date(value);
-              // Convert local datetime string to ISO string for the backend
-              payload.append(key, dateObj.toISOString());
-
-              // Also update time if date is being updated
-              const hours = String(dateObj.getHours()).padStart(2, '0');
-              const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-              payload.append('time', `${hours}:${minutes}`);
-            } else {
-              payload.append(key, String(value));
-            }
+      // Append text fields to FormData, being careful with nested objects and dates
+      Object.entries(eventData).forEach(([key, value]) => {
+        if (key !== '_id' && key !== 'organizer' && key !== 'createdAt' && key !== 'updatedAt' && key !== 'image' && key !== '__v' && value !== null && value !== undefined) {
+          if (key === 'location' && typeof value === 'object' && value !== null) {
+            Object.entries(value).forEach(([locKey, locValue]) => {
+              if (locValue !== null && locValue !== undefined) {
+                payload.append(`location[${locKey}]`, String(locValue));
+              }
+            });
+          } else if (key === 'date' && typeof value === 'string' && value) {
+            const dateObj = new Date(value);
+            payload.append(key, dateObj.toISOString());
+            const hours = String(dateObj.getHours()).padStart(2, '0');
+            const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+            payload.append('time', `${hours}:${minutes}`);
+          } else {
+            payload.append(key, String(value));
           }
         }
-      }
+      });
 
-      // Append the new image file if it exists
       if (imageFile) {
         payload.append('image', imageFile);
       }
@@ -255,6 +249,22 @@ export class OrganizerApiService {
       return data;
     } catch (error) {
       throw new Error((error as any).response?.data?.message || 'Failed to update event');
+    }
+  }
+
+  /**
+   * Cancels an event.
+   * @param eventId - The ID of the event to cancel.
+   */
+  static async cancelEvent(eventId: string): Promise<OrganizerEvent> {
+    try {
+      const response = await API.patch<AdminApiResponse<OrganizerEvent>>(
+        `/dashboard/organizer/events/${eventId}/cancel`
+      );
+      const { data } = extractData<OrganizerEvent>(response.data);
+      return data;
+    } catch (error) {
+      throw new Error((error as any).response?.data?.message || 'Failed to cancel event');
     }
   }
 

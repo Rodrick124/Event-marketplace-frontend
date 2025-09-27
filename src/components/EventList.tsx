@@ -4,19 +4,13 @@ import API from '../services/axios';
 import { extractData } from '../services/response';
 import { formatLocation } from '../utils/format';
 import EventFilter from './EventFilter';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
+import EventCard from './EventCard';
 
 const EventList: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [addingToCart, setAddingToCart] = useState<string | null>(null);
-  const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
-  const { addToCart, isLoading: isCartLoading } = useCart();
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -58,31 +52,6 @@ const EventList: React.FC = () => {
     setFilteredEvents(filtered);
   };
 
-  const handleBuyTicket = (eventId: string) => {
-    if (!isAuthenticated || !localStorage.getItem('auth_token')) {
-      navigate('/signup');
-      return;
-    }
-    // Example: redirect to event detail or checkout page
-    navigate(`/events/${eventId}`);
-  };
-
-  const handleAddToCart = async (eventId: string) => {
-    if (!isAuthenticated) {
-      navigate('/signup');
-      return;
-    }
-    setAddingToCart(eventId);
-    try {
-      await addToCart(eventId, 1); // Add a single ticket to the cart
-    } catch (err) {
-      console.error("Failed to add item to cart:", err);
-      alert('Could not add item to cart. Please try again.');
-    } finally {
-      setAddingToCart(null);
-    }
-  };
-
   if (loading) return <div className="text-gray-500">Loading events...</div>;
   if (error) return <div className="text-red-600">Error: {error}</div>;
 
@@ -91,50 +60,7 @@ const EventList: React.FC = () => {
       <h1 className="text-2xl font-bold mb-6">Upcoming Events</h1>
       <EventFilter onFilterChange={handleFilterChange} />
       <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {filteredEvents.map(event => (
-          <div
-            key={event._id}
-            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-          >
-            <img
-              src={event.image}
-              alt={event.title}
-              className="w-full h-48 object-cover"
-              onError={(e) => {
-                e.currentTarget.src = "/default-event.jpg";
-              }}
-            />
-            <div className="p-4">
-              <h2 className="text-xl font-semibold mb-1">{event.title}</h2>
-              <p className="text-gray-600 text-sm mb-2 line-clamp-3">{event.description}</p>
-              <div className="text-sm text-gray-700 mb-1">📅 {event.date} at 🕒 {event.time}</div>
-              <div className="text-sm text-gray-700 mb-1">📍 {formatLocation(event.location)}</div>
-              <div className="text-sm text-gray-700 mb-1">💰 ${event.price}</div>
-              {event.organizer && (
-                <div className="text-sm text-gray-500 mt-2 italic">
-                  Organized by: {event.organizer.name}
-                </div>
-              )}
-              <div className="mt-4 flex gap-3">
-                <button
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded"
-                  onClick={() => handleBuyTicket(event._id)}
-                >
-                  Buy Your Ticket
-                </button>
-                {isAuthenticated && user?.role === 'attendee' && (
-                  <button
-                    className="bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => handleAddToCart(event._id)}
-                    disabled={addingToCart === event._id || isCartLoading}
-                  >
-                    {addingToCart === event._id ? 'Adding...' : 'Add to Cart'}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
+        {filteredEvents.map(event => <EventCard key={event._id} event={event} />)}
       </div>
     </div>
   );

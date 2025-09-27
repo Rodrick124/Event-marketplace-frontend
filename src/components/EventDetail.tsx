@@ -128,7 +128,7 @@ const EventDetail: React.FC = () => {
           <div className="relative h-96">
             <img
               className="w-full h-full object-cover"
-              src={event.image}
+              src={event.imageUrl}
               alt={event.title}
             />
           </div>
