@@ -6,12 +6,14 @@ import { extractData } from '../services/response';
 import { formatLocation } from '../utils/format';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import EventCard from './EventCard';
 
 const EventDetail: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [similarEvents, setSimilarEvents] = useState<Event[]>([]);
 
   const { addToCart, isLoading: isCartLoading, refetchCart } = useCart();
   const { isAuthenticated } = useAuth();
@@ -28,9 +30,23 @@ const EventDetail: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await API.get(`/events/${eventId}`);
-        const { data } = extractData<Event>(response.data);
-        setEvent(data);
+        const eventResponse = await API.get(`/events/${eventId}`);
+        const { data: mainEvent } = extractData<Event>(eventResponse.data);
+        setEvent(mainEvent);
+
+        if (mainEvent?.category) {
+          try {
+            const similarResponse = await API.get<Event[]>(`/events/search?category=${mainEvent.category}`);
+            const similar = similarResponse.data || [];
+            // Filter out the current event and limit to 3
+            setSimilarEvents(
+              similar.filter(e => e._id !== eventId).slice(0, 3)
+            );
+          } catch (similarError) {
+            // Log error but don't block the page from rendering
+            console.error("Failed to fetch similar events:", similarError);
+          }
+        }
       } catch (err: any) {
         setError(err.response?.data?.message || 'Error fetching event details.');
         console.error('Error fetching event:', err);
@@ -230,6 +246,17 @@ const EventDetail: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {similarEvents.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Similar Events</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {similarEvents.map(similarEvent => (
+                <EventCard key={similarEvent._id} event={similarEvent} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
