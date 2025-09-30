@@ -203,10 +203,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         ...extraData,
       };
 
-      await apiRequest('/auth/register', {
+      const registerResponse = await apiRequest('/auth/register', {
         method: 'POST',
         body: JSON.stringify(requestBody),
       });
+
+      if (registerResponse.success) {
+        // Optionally, send a verification email
+        await apiRequest('/auth/send-verification-email', {
+          method: 'POST',
+          body: JSON.stringify({ email }),
+        });
+      }
+
     } catch (error: any) {
       console.error('Signup error:', error);
       throw new Error(error.message || 'Signup failed');
