@@ -187,81 +187,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signup = async (name: string, email: string, password: string): Promise<void> => {
+  const signup = async (
+    name: string,
+    email: string,
+    password: string,
+    role: UserRole,
+    extraData: { phone?: string } = {}
+  ): Promise<void> => {
     try {
-      const response = await apiRequest('/auth/register', {
-        method: 'POST',
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      console.log('=== SIGNUP DEBUG INFO ===');
-      console.log('Full API response:', JSON.stringify(response, null, 2));
-      console.log('Response keys:', Object.keys(response));
-
-      // Handle different possible response structures
-      let userData, token;
-      
-      if (response.user && response.token) {
-        userData = response.user;
-        token = response.token;
-      } else if (response.data && response.data.user && response.data.token) {
-        userData = response.data.user;
-        token = response.data.token;
-      } else if (response.id && response.email) {
-        userData = response;
-        token = response.token || response.accessToken || response.access_token;
-      } else if (response.success && response.data) {
-        userData = response.data;
-        token = response.data.token || response.token;
-      } else {
-        // Try to find user-like data in the response
-        const possibleUserData = response.user || response.data || response;
-        const possibleToken = response.token || response.accessToken || response.access_token || 
-                             (response.data && response.data.token) || 
-                             (response.user && response.user.token);
-        
-        if (possibleUserData && possibleToken) {
-          userData = possibleUserData;
-          token = possibleToken;
-        } else {
-          throw new Error('Invalid response structure from signup API');
-        }
-      }
-
-      // More flexible validation
-      const userId = userData.id || userData._id || userData.userId || userData.user_id;
-      const userEmail = userData.email || userData.emailAddress || userData.email_address;
-
-      if (!userData || !userId || !userEmail) {
-        console.error('Invalid user data. userData:', userData);
-        throw new Error('Invalid user data received from server');
-      }
-
-      if (!token) {
-        throw new Error('No authentication token received from server');
-      }
-
-      const user: User = {
-        id: userId,
-        name: userData.name || userData.fullName || userData.full_name || name,
-        email: userEmail,
-        role: (userData.role || userData.userRole || userData.user_role || 'user') as UserRole,
-        initials: getInitials(userData.name || userData.fullName || userData.full_name || name),
-        phone: userData.phone || userData.phoneNumber || userData.phone_number,
-        bio: userData.bio || userData.biography,
-        organization: userData.organization || userData.company,
-        website: userData.website || userData.websiteUrl || userData.website_url,
+      const requestBody = {
+        name,
+        email,
+        password,
+        role,
+        ...extraData,
       };
 
-      console.log('Final user object:', JSON.stringify(user, null, 2));
-      console.log('=== END SIGNUP DEBUG ===');
-      
-      setAuthState({
-        user,
-        isAuthenticated: true,
+      await apiRequest('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(requestBody),
       });
-
-      localStorage.setItem('auth_token', token);
     } catch (error: any) {
       console.error('Signup error:', error);
       throw new Error(error.message || 'Signup failed');

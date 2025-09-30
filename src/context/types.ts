@@ -19,7 +19,13 @@ export interface AuthState {
 
 export interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<UserRole>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
+  signup: (
+    name: string,
+    email: string,
+    password: string,
+    role: UserRole,
+    extraData?: { phone?: string }
+  ) => Promise<void>;
   logout: () => void;
   loginWithGoogle: (credential: string) => Promise<void>;
   loginWithFacebook: (response: any) => Promise<void>;
