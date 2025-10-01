@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { OrganizerApiService } from '../../services/organizerApi';
-// @ts-expect-error: Organizer types may be missing during build
+import { toast } from 'react-toastify';
 import type { OrganizerEvent, UpdateEventPayload } from '../../types/Organizer';
 
 const EditEvent: React.FC = () => {
@@ -105,6 +105,37 @@ const EditEvent: React.FC = () => {
           <textarea name="description" id="description" rows={4} value={formData.description || ''} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4"></textarea>
         </div>
 
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">Location</label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <input type="text" name="location.address" placeholder="Address" value={formData.location?.address || ''} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
+              <input type="text" name="location.city" placeholder="City" value={formData.location?.city || ''} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
+              <input type="text" name="location.country" placeholder="Country" value={formData.location?.country || ''} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date and Time</label>
+            <input type="datetime-local" name="date" id="date" value={formData.date || ''} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price ($)</label>
+            <input type="number" name="price" id="price" value={formData.price || 0} onChange={handleChange} required min="0" step="0.01" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
+          </div>
+          <div>
+            <label htmlFor="totalSeats" className="block text-sm font-medium text-gray-700">Total Seats</label>
+            <input type="number" name="totalSeats" id="totalSeats" value={formData.totalSeats || 1} onChange={handleChange} required min="1" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
+          </div>
+           <div>
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
+            <input type="text" name="category" id="category" value={formData.category || ''} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
+          </div>
+        </div>
+
         <div>
           <label htmlFor="image" className="block text-sm font-medium text-gray-700">Event Image</label>
           {imagePreview && (
@@ -121,37 +152,6 @@ const EditEvent: React.FC = () => {
               onChange={handleImageChange}
               className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
             />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date and Time</label>
-            <input type="datetime-local" name="date" id="date" value={formData.date || ''} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">Location</label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <input type="text" name="location.address" placeholder="Address" value={formData.location?.address || ''} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
-              <input type="text" name="location.city" placeholder="City" value={formData.location?.city || ''} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
-              <input type="text" name="location.country" placeholder="Country" value={formData.location?.country || ''} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price ($)</label>
-            <input type="number" name="price" id="price" value={formData.price || 0} onChange={handleChange} required min="0" step="0.01" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
-          </div>
-          <div>
-            <label htmlFor="totalSeats" className="block text-sm font-medium text-gray-700">Total Seats</label>
-            <input type="number" name="totalSeats" id="totalSeats" value={formData.totalSeats || 1} onChange={handleChange} required min="1" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
-          </div>
-           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
-            <input type="text" name="category" id="category" value={formData.category || ''} onChange={handleChange} required className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 border-2 py-2 px-4" />
           </div>
         </div>
 

@@ -41,9 +41,9 @@ const Profile = () => {
         setProfile(data);
         setFormData({
           name: data.name,
-          phone: data.profile.phone || '',
-          bio: data.profile.bio || '',
-          organization: data.profile.organization || '',
+          phone: data.profile?.phone || '',
+          bio: data.profile?.bio || '',
+          organization: data.profile?.organization || '',
         });
       } catch (err: any) {
         setError(err.response?.data?.message || err.message || 'Failed to load profile data.');
@@ -67,9 +67,9 @@ const Profile = () => {
     if (profile) {
       setFormData({
         name: profile.name,
-        phone: profile.profile.phone || '',
-        bio: profile.profile.bio || '',
-        organization: profile.profile.organization || '',
+        phone: profile.profile?.phone || '',
+        bio: profile.profile?.bio || '',
+        organization: profile.profile?.organization || '',
       });
     }
   };
@@ -123,7 +123,7 @@ const Profile = () => {
     <div className="bg-white p-8 rounded-lg shadow-md max-w-4xl mx-auto">
       <div className="flex flex-col sm:flex-row items-center mb-8 pb-8 border-b border-gray-200">
         <img
-          src={profile.profile.avatar || `https://i.pravatar.cc/150?u=${profile.email}`}
+          src={profile.profile?.avatar || `https://i.pravatar.cc/150?u=${profile.email}`}
           alt="User Avatar"
           className="w-24 h-24 rounded-full mr-0 sm:mr-6 mb-4 sm:mb-0 object-cover"
         />
@@ -190,9 +190,9 @@ const Profile = () => {
             </button>
           </div>
           <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
-            <div className="sm:col-span-1"><dt className="text-sm font-medium text-gray-500">Phone Number</dt><dd className="mt-1 text-md text-gray-900">{profile.profile.phone || 'Not provided'}</dd></div>
-            <div className="sm:col-span-1"><dt className="text-sm font-medium text-gray-500">Organization</dt><dd className="mt-1 text-md text-gray-900">{profile.profile.organization || 'Not provided'}</dd></div>
-            <div className="sm:col-span-2"><dt className="text-sm font-medium text-gray-500">Bio</dt><dd className="mt-1 text-md text-gray-900 whitespace-pre-wrap">{profile.profile.bio || 'Not provided'}</dd></div>
+            <div className="sm:col-span-1"><dt className="text-sm font-medium text-gray-500">Phone Number</dt><dd className="mt-1 text-md text-gray-900">{profile.profile?.phone || 'Not provided'}</dd></div>
+            <div className="sm:col-span-1"><dt className="text-sm font-medium text-gray-500">Organization</dt><dd className="mt-1 text-md text-gray-900">{profile.profile?.organization || 'Not provided'}</dd></div>
+            <div className="sm:col-span-2"><dt className="text-sm font-medium text-gray-500">Bio</dt><dd className="mt-1 text-md text-gray-900 whitespace-pre-wrap">{profile.profile?.bio || 'Not provided'}</dd></div>
             <div className="sm:col-span-1"><dt className="text-sm font-medium text-gray-500">Member Since</dt><dd className="mt-1 text-md text-gray-900">{new Date(profile.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</dd></div>
             <div className="sm:col-span-1"><dt className="text-sm font-medium text-gray-500">Last Updated</dt><dd className="mt-1 text-md text-gray-900">{new Date(profile.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</dd></div>
           </dl>

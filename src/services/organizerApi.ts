@@ -216,10 +216,9 @@ export class OrganizerApiService {
    * @param imageFile - An optional new image file for the event.
    */
   static async updateEvent(eventId: string, eventData: UpdateEventPayload, imageFile?: File | null): Promise<OrganizerEvent> {
-    try {
+    if (imageFile) {
+      // If there's an image, use FormData
       const payload = new FormData();
-
-      // Append text fields to FormData, being careful with nested objects and dates
       Object.entries(eventData).forEach(([key, value]) => {
         if (key !== '_id' && key !== 'organizer' && key !== 'createdAt' && key !== 'updatedAt' && key !== 'image' && key !== '__v' && value !== null && value !== undefined) {
           if (key === 'location' && typeof value === 'object' && value !== null) {
@@ -231,24 +230,39 @@ export class OrganizerApiService {
           } else if (key === 'date' && typeof value === 'string' && value) {
             const dateObj = new Date(value);
             payload.append(key, dateObj.toISOString());
-            const hours = String(dateObj.getHours()).padStart(2, '0');
-            const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-            payload.append('time', `${hours}:${minutes}`);
           } else {
             payload.append(key, String(value));
           }
         }
       });
+      payload.append('image', imageFile);
 
-      if (imageFile) {
-        payload.append('image', imageFile);
+      try {
+        const response = await API.patch<AdminApiResponse<OrganizerEvent>>(`/dashboard/organizer/events/${eventId}`, payload, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        const { data } = extractData<OrganizerEvent>(response.data);
+        return data;
+      } catch (error) {
+        throw new Error((error as any).response?.data?.message || 'Failed to update event with image');
       }
+    } else {
+      // If no image, send as JSON
+      const payload = { ...eventData };
+      // The backend might not want these fields on an update
+      delete payload._id;
+      delete (payload as any).organizer;
+      delete (payload as any).createdAt;
+      delete (payload as any).updatedAt;
+      delete (payload as any).__v;
 
-      const response = await API.patch<AdminApiResponse<OrganizerEvent>>(`/dashboard/organizer/events/${eventId}`, payload);
-      const { data } = extractData<OrganizerEvent>(response.data);
-      return data;
-    } catch (error) {
-      throw new Error((error as any).response?.data?.message || 'Failed to update event');
+      try {
+        const response = await API.patch<AdminApiResponse<OrganizerEvent>>(`/dashboard/organizer/events/${eventId}`, payload);
+        const { data } = extractData<OrganizerEvent>(response.data);
+        return data;
+      } catch (error) {
+        throw new Error((error as any).response?.data?.message || 'Failed to update event data');
+      }
     }
   }
 
