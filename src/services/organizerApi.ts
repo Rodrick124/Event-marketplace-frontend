@@ -255,6 +255,7 @@ export class OrganizerApiService {
       delete (payload as any).createdAt;
       delete (payload as any).updatedAt;
       delete (payload as any).__v;
+      delete (payload as any).image; // The 'image' field might be the old URL, which we handle as imageUrl
 
       try {
         const response = await API.patch<AdminApiResponse<OrganizerEvent>>(`/dashboard/organizer/events/${eventId}`, payload);
