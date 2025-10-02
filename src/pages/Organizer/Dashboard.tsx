@@ -9,7 +9,7 @@ import Reservations from './Reservations';
 import CreateEvent from './CreateEvent';
 import EditEvent from './EditEvent'; // Assuming this component will be created
 import { OrganizerApiService, OrganizerDashboardStats, OrganizerAnalyticsData, OrganizerEvent } from '../../services/organizerApi';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { FaEye, FaTimes, FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaDollarSign, FaTag } from 'react-icons/fa';
 
 const OrganizerDashboard = () => {
@@ -151,35 +151,8 @@ const DashboardHome = ({ user }: { user: any }) => {
       <h1 className="text-2xl font-semibold mb-6">Welcome, {user.name}!</h1>
       
       {/* Quick Stats */}
-      <h2 className="text-xl font-semibold mb-4 text-gray-700">Overall Stats</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h3 className="text-lg font-medium mb-2">Total Events</h3>
-          <p className="text-3xl font-bold text-blue-600">{stats?.totalEvents ?? 0}</p>
-          <p className="text-sm text-gray-500">Published events</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h3 className="text-lg font-medium mb-2">Ticket Sales</h3>
-          <p className="text-3xl font-bold text-green-600">{stats?.ticketSales ?? 0}</p>
-          <p className="text-sm text-gray-500">Total tickets sold</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h3 className="text-lg font-medium mb-2">Revenue</h3>
-          <p className="text-3xl font-bold text-purple-600">${stats?.revenue?.toLocaleString() ?? '0.00'}</p>
-          <p className="text-sm text-gray-500">Total earnings</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h3 className="text-lg font-medium mb-2">Active Events</h3>
-          <p className="text-3xl font-bold text-orange-600">{stats?.activeEvents ?? 0}</p>
-          <p className="text-sm text-gray-500">Currently live</p>
-        </div>
-      </div>
-
-      <hr className="my-8 border-t border-gray-200" />
-
-      {/* Analytics Section */}
-      <div>
-        <div className="flex justify-between items-center mb-6">
+      
+      <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-gray-700">Performance Analytics</h2>
           <div className="flex space-x-2">
             {['7d', '30d', '90d'].map((p) => (
@@ -197,6 +170,33 @@ const DashboardHome = ({ user }: { user: any }) => {
             ))}
           </div>
         </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-medium mb-2">Revenue</h3>
+          <p className="text-3xl font-bold text-purple-600">${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          <p className="text-sm text-gray-500">Total earnings</p>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-medium mb-2">Total Events</h3>
+          <p className="text-3xl font-bold text-blue-600">{stats?.totalEvents ?? 0}</p>
+          <p className="text-sm text-gray-500">Published events</p>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-medium mb-2">Total Reservations</h3>
+          <p className="text-3xl font-bold text-indigo-600">{stats?.totalReservations ?? 0}</p>
+          <p className="text-sm text-gray-500">Across all events</p>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-medium mb-2">Paid Reservations</h3>
+          <p className="text-3xl font-bold text-teal-600">{stats?.totalPaidReservations ?? 0}</p>
+          <p className="text-sm text-gray-500">Completed payments</p>
+        </div>
+      </div>
+
+      <hr className="my-8 border-t border-gray-200" />
+
+      {/* Analytics Section */}
+      <div>
 
         {isAnalyticsLoading ? (
           <div>Loading analytics...</div>
@@ -204,17 +204,6 @@ const DashboardHome = ({ user }: { user: any }) => {
           <div className="text-red-500 bg-red-100 p-4 rounded-md">Error: {analyticsError}</div>
         ) : (
           <>
-            {/* Stat Cards for period */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <h3 className="text-lg font-medium text-gray-600">Total Revenue ({period.replace('d', ' days')})</h3>
-                <p className="text-3xl font-bold text-green-600">${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <h3 className="text-lg font-medium text-gray-600">Total Reservations ({period.replace('d', ' days')})</h3>
-                <p className="text-3xl font-bold text-blue-600">{totalReservations.toLocaleString()}</p>
-              </div>
-            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               {/* Revenue Chart */}
@@ -253,61 +242,22 @@ const DashboardHome = ({ user }: { user: any }) => {
 
       <hr className="my-8 border-t border-gray-200" />
 
-      {/* Recent Events Section */}
-      <div>
-        <h2 className="text-xl font-semibold text-gray-700 mb-6">Recent Events</h2>
-        {isEventsLoading ? (
-          <div>Loading recent events...</div>
-        ) : eventsError ? (
-          <div className="text-red-500 bg-red-100 p-4 rounded-md">Error: {eventsError}</div>
-        ) : recentEvents.length > 0 ? (
-          <div className="bg-white shadow-sm rounded-lg overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sales/Capacity</th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {recentEvents.map((event) => (
-                  <tr key={event._id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{event.title}</div>
-                      <div className="text-sm text-gray-500">{event.location}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(event.date).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        event.status === 'published' ? 'bg-green-100 text-green-800' :
-                        event.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {event.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {event.totalReservations ?? 0} / {event.capacity}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button onClick={() => handleViewDetails(event._id)} className="text-blue-600 hover:text-blue-900">
-                        <FaEye />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-gray-500">No recent events to display.</p>
-        )}
+      {/* Top Performing Events Chart */}
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <h3 className="text-lg font-medium mb-4">Top 5 Events by Revenue</h3>
+        <ResponsiveContainer width="50%" height={300}>
+          <BarChart data={stats?.topPerformingEvents?.slice(0, 5)} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="title" tick={{ fontSize: 12 }} />
+            <YAxis />
+            <Tooltip formatter={(value: number) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} />
+            <Legend />
+            <Bar dataKey="revenue" fill="#8884d8" name="Revenue" />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
+
+      <hr className="my-8 border-t border-gray-200" />
 
       {viewingEvent && (
         <EventDetailsModal event={viewingEvent} onClose={() => setViewingEvent(null)} />

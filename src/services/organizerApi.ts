@@ -8,7 +8,15 @@ export interface OrganizerDashboardStats {
   totalEvents: number;
   ticketSales: number;
   revenue: number;
+  totalReservations: number;
+  totalPaidReservations: number;
   activeEvents: number;
+  topPerformingEvents: {
+    eventId: string;
+    title: string;
+    revenue: number;
+    paidReservations: number;
+  }[];
 }
 
 export interface OrganizerAnalyticsData {
