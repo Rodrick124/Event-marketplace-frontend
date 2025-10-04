@@ -4,6 +4,7 @@ import { OrganizerApiService } from '../../services/organizerApi';
 import { OrganizerEvent } from '../../types/Organizer';
 import { FaEdit, FaTrash, FaPlus, FaTimesCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { formatLocation } from '../../utils/format';
 import ConfirmationModal from '../../components/ConfirmationModal';
 
 const MyEvents: React.FC = () => {
@@ -130,7 +131,7 @@ const MyEvents: React.FC = () => {
                 <tr key={event._id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{event.title}</div>
-                    <div className="text-sm text-gray-500">{event.location}</div>
+                    <div className="text-sm text-gray-500">{formatLocation(event.location)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(event.date).toLocaleDateString()}
