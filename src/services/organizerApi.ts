@@ -36,10 +36,10 @@ export interface OrganizerReservation {
     name: string;
     email: string;
   };
-  quantity: number;
-  totalPrice: number;
+  ticketQuantity: number;
+  totalAmount: number;
   status: 'confirmed' | 'cancelled' | 'pending';
-  createdAt: string;
+  reservationDate: string;
 }
 
 /**

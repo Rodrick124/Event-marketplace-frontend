@@ -125,15 +125,16 @@ const Reservations: React.FC = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {reservations.length > 0 ? (
               reservations.map((res) => (
+                console.log(res),
                 <tr key={res._id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{res.event?.title || 'Event not found'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{res.user?.name || 'User not found'}</div>
                     <div className="text-sm text-gray-500">{res.user?.email || ''}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(res.createdAt).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{res.quantity}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${(res.totalPrice ?? 0).toFixed(2)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date( res.reservationDate).toLocaleDateString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{res.ticketQuantity}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${res.totalAmount.toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(res.status)}`}>
                       {res.status ? res.status.charAt(0).toUpperCase() + res.status.slice(1) : 'Unknown'}
