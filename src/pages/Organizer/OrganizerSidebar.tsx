@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { FaUser, FaCalendar, FaCog, FaHome, FaChartBar, FaPlusCircle, FaListAlt } from 'react-icons/fa';
+import { FaUser, FaCalendar, FaCog, FaHome,FaPlusCircle, FaListAlt } from 'react-icons/fa';
 
 const OrganizerSidebar = () => {
   const location = useLocation();
